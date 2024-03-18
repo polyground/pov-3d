@@ -1,8 +1,10 @@
 {
   "name": "pov-3d",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "private": false,
+  "version": "0.0.1",
+  "main": "viewer.ts",
+  "repository": "https://github.com/polyground/pov-3d.git",
+  "author": "김명준 <acspp2017@gmail.com>",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -11,5 +13,10 @@
   "devDependencies": {
     "typescript": "^5.2.2",
     "vite": "^5.1.6"
+  },
+  "dependencies": {
+    "@types/three": "^0.162.0",
+    "prettier": "^3.2.5",
+    "three": "^0.161.0"
   }
 }

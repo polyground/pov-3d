@@ -1,6 +1,6 @@
 import { ViewerOptions } from "../viewer.type.ts";
 
-export const PolygroundPreset: ViewerOptions = {
+export const BaseColorPreset: ViewerOptions = {
   background: false,
   autoRotate: true,
   ambientIntensity: 0.3,

@@ -6,6 +6,19 @@
     <title>Pov-3d Example</title>
   </head>
   <body>
+    <script type="module">
+      import Viewer from "./build/viewer";
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const wrapper = document.querySelector(".my_viewer");
+        if (!wrapper) {
+          throw new Error("Wrapper not found");
+        }
+
+        const exampleViewer = new Viewer(wrapper);
+        await exampleViewer.load("./build/Old_ToadCenser.glb");
+      });
+    </script>
     <main>
       <div class="description">
         <header>
@@ -21,6 +34,5 @@
     <footer>
       <p>© 2024 Pov-3d</p>
     </footer>
-    <script defer type="module" src="../examples/example.ts"></script>
   </body>
 </html>

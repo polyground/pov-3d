@@ -4,22 +4,9 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="../example.style.css" />
     <title>Pov-3d Example</title>
-    <script src="../../vite.config.js"></script>
+    <script type="module" src="../../build/viewer.js"></script>
   </head>
   <body>
-    <script type="module">
-      import Viewer from "../../build/viewer";
-
-      document.addEventListener("DOMContentLoaded", async () => {
-        const wrapper = document.querySelector(".my_viewer");
-        if (!wrapper) {
-          throw new Error("Wrapper not found");
-        }
-
-        const exampleViewer = new Viewer(wrapper);
-        await exampleViewer.load("../sampleAssets/Old_ToadCenser.glb");
-      });
-    </script>
     <main>
       <div class="description">
         <header>
@@ -30,7 +17,7 @@
           glTF 2.0 file or folder here to view it.
         </p>
       </div>
-      <div class="my_viewer"></div>
+      <pov-3d-viewer asset="../sampleAssets/Old_ToadCenser.glb"></pov-3d-viewer>
     </main>
     <footer>
       <p>© 2024 Pov-3d</p>

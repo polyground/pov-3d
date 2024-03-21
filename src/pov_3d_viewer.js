@@ -9,7 +9,6 @@ import {
   Vector3,
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -28,10 +27,20 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath(
   `${THREE_PATH}/examples/jsm/libs/basis/`,
 );
 
-class Viewer {
+class Pov_3d_viewer extends HTMLElement {
+  static get observedAttributes() {
+    return ["asset"];
+  }
   constructor(element, options) {
-    this.el = element;
-
+    super();
+    this.el = this;
+    if (this.isConnected) {
+      this.viewerWidth = this.getBoundingClientRect().width;
+      this.viewerHeight = this.getBoundingClientRect().height;
+    } else {
+      this.viewerWidth = 500;
+      this.viewerHeight = 500;
+    }
     if (!options) {
       this.state = {
         background: false,
@@ -51,7 +60,7 @@ class Viewer {
     });
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setSize(element.clientWidth, element.clientHeight, false);
+    this.renderer.setSize(this.viewerWidth, this.viewerHeight, false);
 
     this.pmremGenerator = new PMREMGenerator(this.renderer);
     this.pmremGenerator.compileEquirectangularShader();
@@ -66,7 +75,7 @@ class Viewer {
     this.scene.environment = this.basicEnvironment;
 
     const fov = 60;
-    const aspect = this.el.clientWidth / this.el.clientHeight;
+    const aspect = this.viewerWidth / this.viewerHeight;
     this.camera = new PerspectiveCamera(fov, aspect, 0.01, 1000);
 
     this.ambientLight = new THREE.AmbientLight(
@@ -123,6 +132,16 @@ class Viewer {
     this.clock = new THREE.Clock();
     this.render = this.render.bind(this);
     this.render();
+    this.load(this.getAttribute("asset"));
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    console.log(
+      `Attribute ${name} has changed from ${oldValue} to ${newValue}.`,
+    );
+    this.load(newValue).catch((error) =>
+      console.error("Error while loading model", error),
+    );
   }
 
   loadModel = (object, clips, isFbx) => {
@@ -176,15 +195,16 @@ class Viewer {
   };
 
   resize = () => {
-    this.camera.aspect = this.el.clientWidth / this.el.clientHeight;
+    this.camera.aspect = this.viewerWidth / this.viewerHeight;
     this.camera.updateProjectionMatrix();
-    this.renderer.setSize(this.el.clientWidth, this.el.clientHeight);
+    this.renderer.setSize(this.viewerWidth, this.viewerHeight);
   };
 
   async load(file) {
+    if (!file) return;
     const fileExtension = file.split(".").pop();
 
-    if (!fileExtension) return;
+    if (!fileExtension) throw new Error("File extension not found");
 
     if (fileExtension === "glb") {
       const glfLoader = new GLTFLoader()
@@ -193,15 +213,23 @@ class Viewer {
         .setKTX2Loader(KTX2_LOADER.detectSupport(this.renderer))
         .setMeshoptDecoder(MeshoptDecoder);
 
-      const gltf = await glfLoader.loadAsync(file);
+      const gltf = await glfLoader.loadAsync(file).catch((error) => {
+        console.error("Error while loading gltf file", error);
+      });
       this.loadModel(gltf.scene, gltf.animations);
     }
     if (fileExtension === "fbx") {
       const fbxLoader = new FBXLoader();
 
-      const fbx = await fbxLoader.loadAsync(file);
+      const fbx = await fbxLoader.loadAsync(file).catch((error) => {
+        console.error("Error while loading fbx file", error);
+      });
       this.loadModel(fbx, fbx.animations, true);
     }
+
+    return Promise.resolve(
+      "Model loaded successfully, you can now use the viewer",
+    );
   }
 
   async mappingEnvironment(enviroment) {
@@ -245,4 +273,4 @@ class Viewer {
   };
 }
 
-export default Viewer;
+customElements.define("pov-3d-viewer", Pov_3d_viewer);

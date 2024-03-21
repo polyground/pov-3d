@@ -22620,39 +22620,40 @@ const $h = new Ih(), eu = `https://unpkg.com/three@0.${Gr}.x`, d0 = new K_($h).s
 ), f0 = new Sn($h).setTranscoderPath(
   `${eu}/examples/jsm/libs/basis/`
 );
-class g0 {
-  constructor(e, t) {
-    bs(this, "loadModel", (e, t, n) => {
-      this.object = e, this.object.updateMatrixWorld();
-      const i = new Mn().setFromObject(this.object), s = i.getSize(new Q()).length(), a = i.getCenter(new Q());
-      if (this.object.position.x += this.object.position.x - a.x, this.object.position.y += this.object.position.y - a.y, this.object.position.z += this.object.position.z - a.z, this.orbitControls.maxDistance = s * 10, this.camera.near = s / 100, this.camera.far = s * 100, this.camera.updateProjectionMatrix(), this.camera.position.copy(a), this.camera.position.x = s / 2, this.camera.position.y = s / 5, this.camera.position.z = s, this.camera.lookAt(a), n && this.state.setBaseColor && this.object.traverse((c) => {
-        c.isMesh && (c.material.map = null, c.material.color.set(this.state.BaseColor || "0x696969"), c.material.shininess = 100, c.needsUpdate = !0);
-      }), t.length === 0) {
+class p0 extends HTMLElement {
+  constructor(t, n) {
+    super();
+    bs(this, "loadModel", (t, n, i) => {
+      this.object = t, this.object.updateMatrixWorld();
+      const s = new Mn().setFromObject(this.object), a = s.getSize(new Q()).length(), o = s.getCenter(new Q());
+      if (this.object.position.x += this.object.position.x - o.x, this.object.position.y += this.object.position.y - o.y, this.object.position.z += this.object.position.z - o.z, this.orbitControls.maxDistance = a * 10, this.camera.near = a / 100, this.camera.far = a * 100, this.camera.updateProjectionMatrix(), this.camera.position.copy(o), this.camera.position.x = a / 2, this.camera.position.y = a / 5, this.camera.position.z = a, this.camera.lookAt(o), i && this.state.setBaseColor && this.object.traverse((l) => {
+        l.isMesh && (l.material.map = null, l.material.color.set(this.state.BaseColor || "0x696969"), l.material.shininess = 100, l.needsUpdate = !0);
+      }), n.length === 0) {
         this.scene.add(this.object);
         return;
       }
-      const o = t;
-      this.scene.add(this.object), this.mixer = new PE(e), this.action = this.mixer.clipAction(o[0]), this.action.setLoop(Vl, 2), this.action.play();
+      const c = n;
+      this.scene.add(this.object), this.mixer = new PE(t), this.action = this.mixer.clipAction(c[0]), this.action.setLoop(Vl, 2), this.action.play();
     });
     bs(this, "resize", () => {
-      this.camera.aspect = this.el.clientWidth / this.el.clientHeight, this.camera.updateProjectionMatrix(), this.renderer.setSize(this.el.clientWidth, this.el.clientHeight);
+      this.camera.aspect = this.viewerWidth / this.viewerHeight, this.camera.updateProjectionMatrix(), this.renderer.setSize(this.viewerWidth, this.viewerHeight);
     });
     bs(this, "render", () => {
-      var e;
-      requestAnimationFrame(this.render), this.state.autoRotate && ((e = this.object) == null || e.rotateY(5e-3)), this.renderer.render(this.scene, this.camera), this.orbitControls.update(), this.mixer && this.mixer.update(this.clock.getDelta());
+      var t;
+      requestAnimationFrame(this.render), this.state.autoRotate && ((t = this.object) == null || t.rotateY(5e-3)), this.renderer.render(this.scene, this.camera), this.orbitControls.update(), this.mixer && this.mixer.update(this.clock.getDelta());
     });
-    bs(this, "mappingTexture", (e, t) => {
-      if (!e || !t || !this.object)
+    bs(this, "mappingTexture", (t, n) => {
+      if (!t || !n || !this.object)
         return;
-      const n = new Ro().load(e);
-      n.colorSpace = At, this.object.traverse((i) => {
-        if (i.isMesh) {
-          const s = i.material;
-          s[t] = n, s.needsUpdate = !0;
+      const i = new Ro().load(t);
+      i.colorSpace = At, this.object.traverse((s) => {
+        if (s.isMesh) {
+          const a = s.material;
+          a[n] = i, a.needsUpdate = !0;
         }
       });
     });
-    this.el = e, t ? this.state = t : this.state = {
+    this.el = this, this.isConnected ? (this.viewerWidth = this.getBoundingClientRect().width, this.viewerHeight = this.getBoundingClientRect().height) : (this.viewerWidth = 500, this.viewerHeight = 500), n ? this.state = n : this.state = {
       background: !1,
       autoRotate: !1,
       ambientIntensity: 0.3,
@@ -22662,54 +22663,71 @@ class g0 {
       bgColor: "#191919"
     }, this.renderer = new Ah({
       antialias: !0
-    }), this.renderer.setPixelRatio(window.devicePixelRatio), this.renderer.setSize(e.clientWidth, e.clientHeight, !1), this.pmremGenerator = new co(this.renderer), this.pmremGenerator.compileEquirectangularShader(), this.basicEnvironment = this.pmremGenerator.fromScene(
+    }), this.renderer.setPixelRatio(window.devicePixelRatio), this.renderer.setSize(this.viewerWidth, this.viewerHeight, !1), this.pmremGenerator = new co(this.renderer), this.pmremGenerator.compileEquirectangularShader(), this.basicEnvironment = this.pmremGenerator.fromScene(
       new u0()
     ).texture, this.el.appendChild(this.renderer.domElement), this.scene = new dh(), this.scene.environment = this.basicEnvironment;
-    const n = 60, i = this.el.clientWidth / this.el.clientHeight;
-    this.camera = new Yt(n, i, 0.01, 1e3), this.ambientLight = new vh(
+    const i = 60, s = this.viewerWidth / this.viewerHeight;
+    this.camera = new Yt(i, s, 0.01, 1e3), this.ambientLight = new vh(
       this.state.ambientColor,
       this.state.ambientIntensity
     ), this.scene.add(this.ambientLight);
-    const s = new Ls(
-      this.state.directColor,
-      this.state.directIntensity
-    ), a = new Ls(
+    const a = new Ls(
       this.state.directColor,
       this.state.directIntensity
     ), o = new Ls(
       this.state.directColor,
       this.state.directIntensity
-    ), c = 100, l = 0, h = 46, u = 0;
+    ), c = new Ls(
+      this.state.directColor,
+      this.state.directIntensity
+    ), l = 100, h = 0, u = 46, A = 0;
     [
-      { angle: 0, light: s },
-      { angle: 120, light: a },
-      { angle: 240, light: o }
-    ].forEach((d) => {
-      const g = Math.PI / 180 * d.angle, _ = l + c * Math.cos(g), f = u + c * Math.sin(g);
-      d.light.position.set(_, h, f), this.scene.add(d.light);
+      { angle: 0, light: a },
+      { angle: 120, light: o },
+      { angle: 240, light: c }
+    ].forEach((g) => {
+      const _ = Math.PI / 180 * g.angle, f = h + l * Math.cos(_), p = A + l * Math.sin(_);
+      g.light.position.set(f, u, p), this.scene.add(g.light);
     }), this.orbitControls = new g_(
       this.camera,
       this.renderer.domElement
-    ), this.orbitControls.enableDamping = !0, this.orbitControls.dampingFactor = 0.03, this.backgroundColor = new De(this.state.bgColor), this.scene.background = this.backgroundColor, window.addEventListener("resize", this.resize.bind(this), !1), this.clock = new xE(), this.render = this.render.bind(this), this.render();
+    ), this.orbitControls.enableDamping = !0, this.orbitControls.dampingFactor = 0.03, this.backgroundColor = new De(this.state.bgColor), this.scene.background = this.backgroundColor, window.addEventListener("resize", this.resize.bind(this), !1), this.clock = new xE(), this.render = this.render.bind(this), this.render(), this.load(this.getAttribute("asset"));
   }
-  async load(e) {
-    const t = e.split(".").pop();
-    if (t) {
-      if (t === "glb") {
-        const i = await new FE().setCrossOrigin("anonymous").setDRACOLoader(d0).setKTX2Loader(f0.detectSupport(this.renderer)).setMeshoptDecoder(Z_).loadAsync(e);
-        this.loadModel(i.scene, i.animations);
-      }
-      if (t === "fbx") {
-        const i = await new Q_().loadAsync(e);
-        this.loadModel(i, i.animations, !0);
-      }
+  static get observedAttributes() {
+    return ["asset"];
+  }
+  attributeChangedCallback(t, n, i) {
+    console.log(
+      `Attribute ${t} has changed from ${n} to ${i}.`
+    ), this.load(i).catch(
+      (s) => console.error("Error while loading model", s)
+    );
+  }
+  async load(t) {
+    if (!t)
+      return;
+    const n = t.split(".").pop();
+    if (!n)
+      throw new Error("File extension not found");
+    if (n === "glb") {
+      const s = await new FE().setCrossOrigin("anonymous").setDRACOLoader(d0).setKTX2Loader(f0.detectSupport(this.renderer)).setMeshoptDecoder(Z_).loadAsync(t).catch((a) => {
+        console.error("Error while loading gltf file", a);
+      });
+      this.loadModel(s.scene, s.animations);
     }
+    if (n === "fbx") {
+      const s = await new Q_().loadAsync(t).catch((a) => {
+        console.error("Error while loading fbx file", a);
+      });
+      this.loadModel(s, s.animations, !0);
+    }
+    return Promise.resolve(
+      "Model loaded successfully, you can now use the viewer"
+    );
   }
-  async mappingEnvironment(e) {
-    const t = await new A0().loadAsync(e);
-    this.pmremGenerator.fromEquirectangular(t).texture, this.pmremGenerator.dispose(), this.scene.environment = t, this.scene.background = this.state.background ? t : this.backgroundColor;
+  async mappingEnvironment(t) {
+    const n = await new A0().loadAsync(t);
+    this.pmremGenerator.fromEquirectangular(n).texture, this.pmremGenerator.dispose(), this.scene.environment = n, this.scene.background = this.state.background ? n : this.backgroundColor;
   }
 }
-export {
-  g0 as default
-};
+customElements.define("pov-3d-viewer", p0);

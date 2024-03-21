@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   build: {
     lib: {
-      entry: "src/viewer.js",
+      entry: "src/pov_3d_viewer.js",
       name: "pov-3d",
       fileName: "viewer",
       formats: ["es", "cjs"],
@@ -11,7 +11,7 @@ export default defineConfig({
     outDir: "build",
     rollupOptions: {
       input: {
-        viewer: "src/viewer.js",
+        viewer: "src/pov_3d_viewer.js",
       },
     },
   },

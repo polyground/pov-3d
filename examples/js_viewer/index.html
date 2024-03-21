@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="../example.style.css" />
     <title>Pov-3d Example</title>
+    <script type="module" src="../../build/viewer.js"></script>
   </head>
   <body>
     <main>
@@ -16,11 +17,23 @@
           glTF 2.0 file or folder here to view it.
         </p>
       </div>
-      <div class="my_viewer"></div>
+      <pov-3d-viewer
+        id="pov-3d-viewer1"
+        asset="../sampleAssets/Old_ToadCenser.glb"
+      ></pov-3d-viewer>
+      <button is="pov-3d-viewer" onclick="test()">change</button>
+      <script>
+        const viewer = document.getElementById("pov-3d-viewer1");
+        function test() {
+          viewer.setAttribute(
+            "asset",
+            "examples/sampleAssets/LittlestTokyo.glb",
+          );
+        }
+      </script>
     </main>
     <footer>
       <p>© 2024 Pov-3d</p>
     </footer>
-    <script defer type="module" src="./example.js"></script>
   </body>
 </html>

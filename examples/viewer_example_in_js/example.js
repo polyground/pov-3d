@@ -1,4 +1,4 @@
-import Viewer from "../build/viewer";
+import Viewer from "../../build/viewer";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const wrapper = document.querySelector(".my_viewer");
@@ -7,5 +7,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const exampleViewer = new Viewer(wrapper);
-  await exampleViewer.load("../public/Old_ToadCenser.glb");
+  await exampleViewer.load("../sampleAssets/Old_ToadCenser.glb");
 });

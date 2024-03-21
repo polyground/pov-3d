@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../example.style.css" />
+    <title>Pov-3d Example</title>
+  </head>
+  <body>
+    <script type="module">
+      import Viewer from "../build/viewer";
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const wrapper = document.querySelector(".my_viewer");
+        if (!wrapper) {
+          throw new Error("Wrapper not found");
+        }
+
+        const exampleViewer = new Viewer(wrapper);
+        await exampleViewer.load("../public/Old_ToadCenser.glb");
+      });
+    </script>
+    <main>
+      <div class="description">
+        <header>
+          <h1><a href="/">Pov-3d</a></h1>
+        </header>
+        <p>
+          This is a simple example of how to use Pov-3d. You can drag and drop a
+          glTF 2.0 file or folder here to view it.
+        </p>
+      </div>
+      <div class="my_viewer"></div>
+    </main>
+    <footer>
+      <p>© 2024 Pov-3d</p>
+    </footer>
+  </body>
+</html>

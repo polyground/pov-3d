@@ -11,10 +11,13 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "typescript": "^5.2.2",
     "vite": "^5.1.6"
   },
   "dependencies": {
+    "@types/three": "^0.162.0",
     "prettier": "^3.2.5",
     "three": "^0.161.0"
   }
 }
+

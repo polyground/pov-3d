@@ -8,11 +8,14 @@ export default defineConfig({
       fileName: "viewer",
       formats: ["es", "umd", "cjs"],
     },
-    outDir: "examples/build",
+    outDir: "examples/viewer_example_in_html/build",
     rollupOptions: {
       input: {
         viewer: "src/viewer.js",
       },
     },
+  },
+  server: {
+    open: "/examples/index.html",
   },
 });

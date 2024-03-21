@@ -6,7 +6,7 @@ export default defineConfig({
       entry: "src/viewer.js",
       name: "pov-3d",
       fileName: "viewer",
-      formats: ["es", "umd", "cjs"],
+      formats: ["es", "cjs"],
     },
     outDir: "build",
     rollupOptions: {

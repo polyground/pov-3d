@@ -8,7 +8,7 @@ export default defineConfig({
       fileName: "viewer",
       formats: ["es", "umd", "cjs"],
     },
-    outDir: "examples/viewer_example_in_html/build",
+    outDir: "build",
     rollupOptions: {
       input: {
         viewer: "src/viewer.js",

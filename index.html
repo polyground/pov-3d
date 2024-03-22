@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="examples/example.style.css" />
+    <title>Pov-3d Example</title>
+    <script type="module" src="src/pov_3d_viewer.js"></script>
+  </head>
+  <body>
+    <main>
+      <div class="side_box">
+        <header>
+          <h1><a href="/">Pov-3d</a></h1>
+        </header>
+        <p>This is a simple example of how to use Pov-3d.</p>
+        <nav>
+          <a href="/">Simple example</a>
+          <a href="/">Dynamic example</a>
+        </nav>
+      </div>
+      <pov-3d-viewer
+        id="pov-3d-viewer"
+        asset="examples/sampleAssets/Old_ToadCenser.glb"
+        preset="Fbx"
+      ></pov-3d-viewer>
+      <div class="option_area">
+        <select
+          id="presetSelect"
+          is="pov-3d-viewer"
+          aria-label="presetSelect"
+          onchange="changePreset(this.value)"
+        >
+          <option value="Initial">Initial</option>
+          <option value="Bright">Bright</option>
+          <option value="Fbx">Fbx</option>
+          <option value="Polyground">Polyground</option>
+        </select>
+        <select
+          id="assetSelect"
+          is="pov-3d-viewer"
+          aria-label="Asset Select"
+          onchange="changeAsset(this.value)"
+        >
+          <option value="examples/sampleAssets/Old_ToadCenser.glb">
+            Old_ToadCenser
+          </option>
+          <option value="examples/sampleAssets/LittlestTokyo.glb">
+            LittlestTokyo
+          </option>
+          <option value="examples/sampleAssets/a000305_HP.fbx">
+            Fbx Example
+          </option>
+        </select>
+      </div>
+      <script>
+        const viewer = document.getElementById("pov-3d-viewer");
+        function changeAsset(asset) {
+          viewer.setAttribute("asset", asset);
+        }
+        function changePreset(preset) {
+          viewer.setAttribute("preset", preset);
+        }
+      </script>
+    </main>
+    <footer>
+      <p>© 2024 Pov-3d</p>
+    </footer>
+  </body>
+</html>

@@ -19238,7 +19238,7 @@ var x_ = /* @__PURE__ */ Ps(Vs, 9, 1), I_ = /* @__PURE__ */ Ps(Dh, 5, 1), Na = f
   if ((r[0] & 15) != 8 || r[0] >>> 4 > 7 || (r[0] << 8 | r[1]) % 31)
     throw "invalid zlib data";
   if (r[1] & 32)
-    throw "invalid zlib data: preset dictionaries not supported";
+    throw "invalid zlib data: option dictionaries not supported";
 };
 function Bs(r, e) {
   return y_((M_(r), r.subarray(2, -4)), e);
@@ -22653,7 +22653,7 @@ class p0 extends HTMLElement {
         }
       });
     });
-    this.el = this, this.isConnected ? (this.viewerWidth = this.getBoundingClientRect().width, this.viewerHeight = this.getBoundingClientRect().height) : (this.viewerWidth = 500, this.viewerHeight = 500), n ? this.state = n : this.state = {
+    console.log("111"), this.el = this, this.isConnected ? (this.viewerWidth = this.getBoundingClientRect().width, this.viewerHeight = this.getBoundingClientRect().height) : (this.viewerWidth = 500, this.viewerHeight = 500), n ? this.state = n : this.state = {
       background: !1,
       autoRotate: !1,
       ambientIntensity: 0.3,
@@ -22691,10 +22691,13 @@ class p0 extends HTMLElement {
     }), this.orbitControls = new g_(
       this.camera,
       this.renderer.domElement
-    ), this.orbitControls.enableDamping = !0, this.orbitControls.dampingFactor = 0.03, this.backgroundColor = new De(this.state.bgColor), this.scene.background = this.backgroundColor, window.addEventListener("resize", this.resize.bind(this), !1), this.clock = new xE(), this.render = this.render.bind(this), this.render(), this.load(this.getAttribute("asset"));
+    ), this.orbitControls.enableDamping = !0, this.orbitControls.dampingFactor = 0.03, this.backgroundColor = new De(this.state.bgColor), this.scene.background = this.backgroundColor, window.addEventListener("resize", this.resize.bind(this), !1), this.clock = new xE(), this.render = this.render.bind(this), this.render(), this.getAttribute("asset");
   }
   static get observedAttributes() {
-    return ["asset"];
+    return ["asset,option"];
+  }
+  connectedCallback() {
+    console.log("Element added to the DOM");
   }
   attributeChangedCallback(t, n, i) {
     console.log(
@@ -22704,7 +22707,7 @@ class p0 extends HTMLElement {
     );
   }
   async load(t) {
-    if (!t)
+    if (this.object && (this.scene.remove(this.object), this.object = null), !t)
       return;
     const n = t.split(".").pop();
     if (!n)

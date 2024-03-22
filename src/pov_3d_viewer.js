@@ -16,6 +16,7 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
+import ViewerOption from "./option/viewerOption";
 
 const MANAGER = new LoadingManager();
 const THREE_PATH = `https://unpkg.com/three@0.${REVISION}.x`;
@@ -29,30 +30,19 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath(
 
 class Pov_3d_viewer extends HTMLElement {
   static get observedAttributes() {
-    return ["asset"];
+    return ["asset", "preset"];
   }
-  constructor(element, options) {
+  constructor() {
     super();
-    this.el = this;
+
+    this.viewerOption = new ViewerOption();
+
     if (this.isConnected) {
       this.viewerWidth = this.getBoundingClientRect().width;
       this.viewerHeight = this.getBoundingClientRect().height;
     } else {
       this.viewerWidth = 500;
       this.viewerHeight = 500;
-    }
-    if (!options) {
-      this.state = {
-        background: false,
-        autoRotate: false,
-        ambientIntensity: 0.3,
-        ambientColor: "#FFFFFF",
-        directIntensity: 0.8 * Math.PI,
-        directColor: "#FFFFFF",
-        bgColor: "#191919",
-      };
-    } else {
-      this.state = options;
     }
 
     this.renderer = new THREE.WebGLRenderer({
@@ -69,7 +59,7 @@ class Pov_3d_viewer extends HTMLElement {
       new RoomEnvironment(),
     ).texture;
 
-    this.el.appendChild(this.renderer.domElement);
+    this.appendChild(this.renderer.domElement);
     this.scene = new THREE.Scene();
 
     this.scene.environment = this.basicEnvironment;
@@ -78,24 +68,76 @@ class Pov_3d_viewer extends HTMLElement {
     const aspect = this.viewerWidth / this.viewerHeight;
     this.camera = new PerspectiveCamera(fov, aspect, 0.01, 1000);
 
+    this.lightSetup();
+
+    this.controlSetup();
+
+    this.backgroundSetup();
+
+    window.addEventListener("resize", this.resize.bind(this), false);
+
+    this.clock = new THREE.Clock();
+    this.render = this.render.bind(this);
+    this.render();
+    this.load(this.getAttribute("asset"));
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "preset") {
+      this.updateOption(
+        this.viewerOption[newValue] || this.viewerOption.Initial,
+      );
+    }
+
+    if (name === "asset" && oldValue) {
+      this.load(newValue).catch((error) =>
+        console.error("Error while loading model", error),
+      );
+    }
+  }
+
+  updateOption = (option) => {
+    this.viewerOption.attribute = option;
+    this.lightSetup();
+    this.backgroundSetup();
+    if (this.viewerOption.attribute.baseColor) {
+      this.baseColorSetup();
+    }
+  };
+
+  controlSetup = () => {
+    this.orbitControls = new OrbitControls(
+      this.camera,
+      this.renderer.domElement,
+    );
+    this.orbitControls.enableDamping = true;
+    this.orbitControls.dampingFactor = 0.03;
+  };
+
+  backgroundSetup = () => {
+    this.backgroundColor = new Color(this.viewerOption.attribute.bgColor);
+    this.scene.background = this.backgroundColor;
+  };
+
+  lightSetup = () => {
     this.ambientLight = new THREE.AmbientLight(
-      this.state.ambientColor,
-      this.state.ambientIntensity,
+      this.viewerOption.attribute.ambientColor,
+      this.viewerOption.attribute.ambientIntensity,
     );
     this.scene.add(this.ambientLight);
 
     const directionalLight = new THREE.DirectionalLight(
-      this.state.directColor,
-      this.state.directIntensity,
+      this.viewerOption.attribute.directColor,
+      this.viewerOption.attribute.directIntensity,
     );
     const directionalLight2 = new THREE.DirectionalLight(
-      this.state.directColor,
-      this.state.directIntensity,
+      this.viewerOption.attribute.directColor,
+      this.viewerOption.attribute.directIntensity,
     );
 
     const directionalLight3 = new THREE.DirectionalLight(
-      this.state.directColor,
-      this.state.directIntensity,
+      this.viewerOption.attribute.directColor,
+      this.viewerOption.attribute.directIntensity,
     );
 
     const radius = 100;
@@ -116,35 +158,27 @@ class Pov_3d_viewer extends HTMLElement {
       pos.light.position.set(x, centerY, z);
       this.scene.add(pos.light);
     });
+  };
 
-    this.orbitControls = new OrbitControls(
-      this.camera,
-      this.renderer.domElement,
-    );
-    this.orbitControls.enableDamping = true;
-    this.orbitControls.dampingFactor = 0.03;
-
-    this.backgroundColor = new Color(this.state.bgColor);
-    this.scene.background = this.backgroundColor;
-
-    window.addEventListener("resize", this.resize.bind(this), false);
-
-    this.clock = new THREE.Clock();
-    this.render = this.render.bind(this);
-    this.render();
-    this.load(this.getAttribute("asset"));
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    console.log(
-      `Attribute ${name} has changed from ${oldValue} to ${newValue}.`,
-    );
-    this.load(newValue).catch((error) =>
-      console.error("Error while loading model", error),
-    );
-  }
+  baseColorSetup = () => {
+    this.object.traverse((node) => {
+      if (node.isMesh) {
+        node.material.map = null;
+        node.material.color.set(
+          this.viewerOption.attribute.baseColor || "0x696969",
+        );
+        node.material.shininess = 100;
+        node.needsUpdate = true;
+      }
+    });
+  };
 
   loadModel = (object, clips, isFbx) => {
+    if (this.object) {
+      this.scene.remove(this.object);
+      this.object = null;
+    }
+
     this.object = object;
 
     this.object.updateMatrixWorld();
@@ -167,15 +201,8 @@ class Pov_3d_viewer extends HTMLElement {
     this.camera.position.z = size;
     this.camera.lookAt(center);
 
-    if (isFbx && this.state.setBaseColor) {
-      this.object.traverse((node) => {
-        if (node.isMesh) {
-          node.material.map = null;
-          node.material.color.set(this.state.BaseColor || "0x696969");
-          node.material.shininess = 100;
-          node.needsUpdate = true;
-        }
-      });
+    if (isFbx) {
+      this.baseColorSetup();
     }
 
     if (clips.length === 0) {
@@ -232,22 +259,22 @@ class Pov_3d_viewer extends HTMLElement {
     );
   }
 
-  async mappingEnvironment(enviroment) {
-    const envMap = await new EXRLoader().loadAsync(enviroment);
-
-    this.pmremGenerator.fromEquirectangular(envMap).texture;
-    this.pmremGenerator.dispose();
-
-    this.scene.environment = envMap;
-    this.scene.background = this.state.background
-      ? envMap
-      : this.backgroundColor;
-  }
+  // async mappingEnvironment(enviroment) {
+  //   const envMap = await new EXRLoader().loadAsync(enviroment);
+  //
+  //   this.pmremGenerator.fromEquirectangular(envMap).texture;
+  //   this.pmremGenerator.dispose();
+  //
+  //   this.scene.environment = envMap;
+  //   this.scene.background = this.viewerOption.attribute.background
+  //     ? envMap
+  //     : this.backgroundColor;
+  // }
 
   render = () => {
     requestAnimationFrame(this.render);
 
-    if (this.state.autoRotate) {
+    if (this.viewerOption.attribute.autoRotate) {
       this.object?.rotateY(0.005);
     }
     this.renderer.render(this.scene, this.camera);

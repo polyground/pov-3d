@@ -21,14 +21,21 @@
         id="pov-3d-viewer1"
         asset="../sampleAssets/Old_ToadCenser.glb"
       ></pov-3d-viewer>
-      <button is="pov-3d-viewer" onclick="test()">change</button>
+      <select
+        id="assetSelect"
+        is="pov-3d-viewer"
+        aria-label="Asset Select"
+        onchange="changeAsset(this.value)"
+      >
+        <option value="../sampleAssets/Old_ToadCenser.glb">
+          Old_ToadCenser
+        </option>
+        <option value="../sampleAssets/LittlestTokyo.glb">LittlestTokyo</option>
+      </select>
       <script>
         const viewer = document.getElementById("pov-3d-viewer1");
-        function test() {
-          viewer.setAttribute(
-            "asset",
-            "examples/sampleAssets/LittlestTokyo.glb",
-          );
+        function changeAsset(asset) {
+          viewer.setAttribute("asset", asset);
         }
       </script>
     </main>

@@ -30,12 +30,17 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath(
 
 class Pov_3d_viewer extends HTMLElement {
   static get observedAttributes() {
-    return ["asset", "preset"];
+    return ["asset", "preset", "base_color"];
   }
   constructor() {
     super();
 
+    const preset = this.getAttribute("preset");
+
     this.viewerOption = new ViewerOption();
+    if (preset) {
+      this.viewerOption.attribute = ViewerOption[preset]();
+    }
 
     if (this.isConnected) {
       this.viewerWidth = this.getBoundingClientRect().width;
@@ -68,6 +73,10 @@ class Pov_3d_viewer extends HTMLElement {
     const aspect = this.viewerWidth / this.viewerHeight;
     this.camera = new PerspectiveCamera(fov, aspect, 0.01, 1000);
 
+    this.directionalLight = null;
+    this.directionalLight2 = null;
+    this.directionalLight3 = null;
+
     this.lightSetup();
 
     this.controlSetup();
@@ -79,14 +88,18 @@ class Pov_3d_viewer extends HTMLElement {
     this.clock = new THREE.Clock();
     this.render = this.render.bind(this);
     this.render();
-    this.load(this.getAttribute("asset"));
+    this.load(this.getAttribute("asset"))
+      .then(() => {
+        console.log("Model loaded successfully");
+      })
+      .catch((error) => {
+        console.error("Error while loading model", error);
+      });
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "preset") {
-      this.updateOption(
-        this.viewerOption[newValue] || this.viewerOption.Initial,
-      );
+      this.updateOption(ViewerOption[newValue]() || ViewerOption.Initial);
     }
 
     if (name === "asset" && oldValue) {
@@ -94,12 +107,19 @@ class Pov_3d_viewer extends HTMLElement {
         console.error("Error while loading model", error),
       );
     }
+
+    if (name === "base_color") {
+      this.viewerOption.attribute.baseColor = newValue;
+      this.baseColorSetup();
+    }
   }
 
   updateOption = (option) => {
     this.viewerOption.attribute = option;
+
     this.lightSetup();
     this.backgroundSetup();
+
     if (this.viewerOption.attribute.baseColor) {
       this.baseColorSetup();
     }
@@ -120,22 +140,28 @@ class Pov_3d_viewer extends HTMLElement {
   };
 
   lightSetup = () => {
+    if (this.ambientLight) this.scene.remove(this.ambientLight);
+    if (this.directionalLight) this.scene.remove(this.directionalLight);
+    if (this.directionalLight2) this.scene.remove(this.directionalLight2);
+    if (this.directionalLight3) this.scene.remove(this.directionalLight3);
+
     this.ambientLight = new THREE.AmbientLight(
       this.viewerOption.attribute.ambientColor,
       this.viewerOption.attribute.ambientIntensity,
     );
+
     this.scene.add(this.ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(
+    this.directionalLight = new THREE.DirectionalLight(
       this.viewerOption.attribute.directColor,
       this.viewerOption.attribute.directIntensity,
     );
-    const directionalLight2 = new THREE.DirectionalLight(
+    this.directionalLight2 = new THREE.DirectionalLight(
       this.viewerOption.attribute.directColor,
       this.viewerOption.attribute.directIntensity,
     );
 
-    const directionalLight3 = new THREE.DirectionalLight(
+    this.directionalLight3 = new THREE.DirectionalLight(
       this.viewerOption.attribute.directColor,
       this.viewerOption.attribute.directIntensity,
     );
@@ -146,9 +172,9 @@ class Pov_3d_viewer extends HTMLElement {
     const centerZ = 0;
 
     const positions = [
-      { angle: 0, light: directionalLight },
-      { angle: 120, light: directionalLight2 },
-      { angle: 240, light: directionalLight3 },
+      { angle: 0, light: this.directionalLight },
+      { angle: 120, light: this.directionalLight2 },
+      { angle: 240, light: this.directionalLight3 },
     ];
 
     positions.forEach((pos) => {
@@ -164,9 +190,11 @@ class Pov_3d_viewer extends HTMLElement {
     this.object.traverse((node) => {
       if (node.isMesh) {
         node.material.map = null;
+
         node.material.color.set(
-          this.viewerOption.attribute.baseColor || "0x696969",
+          new Color(this.viewerOption.attribute.baseColor || "#696969"),
         );
+
         node.material.shininess = 100;
         node.needsUpdate = true;
       }
@@ -180,6 +208,8 @@ class Pov_3d_viewer extends HTMLElement {
     }
 
     this.object = object;
+
+    console.log("mj: this.object", this.object);
 
     this.object.updateMatrixWorld();
     const box = new Box3().setFromObject(this.object);

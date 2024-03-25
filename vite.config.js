@@ -15,6 +15,7 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: { exclude: ["fsevents"] },
   server: {
     // open: "/examples/index.html",
     open: "index.html",

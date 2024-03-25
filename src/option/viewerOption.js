@@ -32,22 +32,20 @@ class ViewerOption {
       directIntensity: 0.8 * Math.PI,
       directColor: "#FFFFFF",
       bgColor: "#191919",
-      setBaseColor: true,
-      baseColor: "0x696969",
+      // setBaseColor: true,
+      // baseColor: "#696969",
     });
   }
 
-  static Fbx() {
+  static Dark() {
     return (this._attribute = {
       background: false,
-      autoRotate: true,
-      ambientIntensity: 0.3,
+      autoRotate: false,
+      ambientIntensity: 0.1,
       ambientColor: "#FFFFFF",
-      directIntensity: 0.8 * Math.PI,
+      directIntensity: 0.2 * Math.PI,
       directColor: "#FFFFFF",
       bgColor: "#191919",
-      setBaseColor: true,
-      baseColor: "0x696969",
     });
   }
 

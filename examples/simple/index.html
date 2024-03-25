@@ -14,33 +14,14 @@
         </header>
         <p>This is a simple example of how to use Pov-3d.</p>
         <nav>
-          <a href="../simple/index.html">Simple example</a>
-          <a href="index.html">Dynamic example</a>
+          <a href="./index.html">Simple example</a>
+          <a href="../dynamic/index.html">Dynamic example</a>
         </nav>
       </div>
       <pov-3d-viewer
         id="pov-3d-viewer"
         asset="../sampleAssets/Old_ToadCenser.glb"
-        preset="Fbx"
       ></pov-3d-viewer>
-      <select
-        id="assetSelect"
-        is="pov-3d-viewer"
-        aria-label="Asset Select"
-        onchange="changeAsset(this.value)"
-      >
-        <option value="../sampleAssets/Old_ToadCenser.glb">
-          Old_ToadCenser
-        </option>
-        <option value="../sampleAssets/LittlestTokyo.glb">LittlestTokyo</option>
-        <option value="../sampleAssets/a000305_HP.fbx">Fbx Example</option>
-      </select>
-      <script>
-        const viewer = document.getElementById("pov-3d-viewer");
-        function changeAsset(asset) {
-          viewer.setAttribute("asset", asset);
-        }
-      </script>
     </main>
     <footer>
       <p>© 2024 Pov-3d</p>

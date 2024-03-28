@@ -18,10 +18,13 @@
           <!--          <a href="./index.html">Dynamic example</a>-->
         </nav>
       </div>
-      <pov-3d-viewer
-        id="pov-3d-viewer"
-        asset="examples/sampleAssets/Old_ToadCenser.glb"
-      ></pov-3d-viewer>
+      <!--      <pov-3d-viewer-->
+      <!--        id="pov-3d-viewer"-->
+      <!--        model="examples/sampleModel/Old_ToadCenser.glb"-->
+      <!--        preset="Initial"-->
+      <!--        base_color="#ff0000"-->
+      <!--      ></pov-3d-viewer>-->
+      <pov-3d-viewer id="pov-3d-viewer"></pov-3d-viewer>
       <div class="option_area">
         <label for="select-base-color-picker">Select BaseColor</label>
         <div class="color_picker_wrap">
@@ -55,24 +58,22 @@
         <select
           id="select-model"
           is="pov-3d-viewer"
-          onchange="changeAsset(this.value)"
+          onchange="changeModel(this.value)"
         >
-          <option value="examples/sampleAssets/Old_ToadCenser.glb">
+          <option value="examples/sampleModel/Old_ToadCenser.glb">
             Old_ToadCenser
           </option>
-          <option value="examples/sampleAssets/LittlestTokyo.glb">
-            LittlestTokyo
-          </option>
-          <option value="examples/sampleAssets/Large_Silver_Pistol.fbx">
+          <option value="examples/sampleModel/Large_Silver_Pistol.fbx">
             Fbx Example(Large_Silver_Pistol)
           </option>
-          <option value="examples/sampleAssets/Old_Treasure_Box.fbx">
+          <option value="examples/sampleModel/Old_Treasure_Box.fbx">
             Fbx Example(Old_Treasure_Box)
           </option>
         </select>
       </div>
       <script>
         const viewer = document.getElementById("pov-3d-viewer");
+
         const baseColorInput = document.getElementById(
           "select-base-color-input",
         );
@@ -80,8 +81,18 @@
           "select-base-color-picker",
         );
 
-        function changeAsset(asset) {
-          viewer.setAttribute("asset", asset);
+        viewer.addEventListener("onload", () => {
+          if (!viewer) return;
+          viewer.setAttribute(
+            "model",
+            "examples/sampleModel/Old_ToadCenser.glb",
+          );
+          viewer.setAttribute("preset", "Initial");
+          viewer.setAttribute("base_color", "#ff0000");
+        });
+
+        function changeModel(model) {
+          viewer.setAttribute("model", model);
         }
         function changePreset(preset) {
           viewer.setAttribute("preset", preset);
@@ -94,6 +105,7 @@
           const isValidHexColor = /^#([0-9A-F]{3}){1,2}$/i.test(baseColor);
           if (isValidHexColor) {
             baseColorPicker.value = baseColor;
+            viewer.setAttribute("base_color", baseColor);
           } else {
             baseColorInput.value = "";
           }

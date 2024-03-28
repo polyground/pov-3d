@@ -29,18 +29,10 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath(
 );
 
 class Pov_3d_viewer extends HTMLElement {
-  static get observedAttributes() {
-    return ["asset", "preset", "base_color"];
-  }
   constructor() {
     super();
 
-    const preset = this.getAttribute("preset");
-
-    this.viewerOption = new ViewerOption();
-    if (preset) {
-      this.viewerOption.attribute = ViewerOption[preset]();
-    }
+    this.updateAttribute();
 
     if (this.isConnected) {
       this.viewerWidth = this.getBoundingClientRect().width;
@@ -88,29 +80,77 @@ class Pov_3d_viewer extends HTMLElement {
     this.clock = new THREE.Clock();
     this.render = this.render.bind(this);
     this.render();
-    this.load(this.getAttribute("asset"))
-      .then(() => {
-        console.log("Model loaded successfully");
-      })
-      .catch((error) => {
-        console.error("Error while loading model", error);
-      });
+
+    this.dispatchEvent(new Event("onload"));
+    this.updateAttribute(true);
+
+    if (this.model) {
+      this.load(this.model)
+        .then(() => {
+          console.log("Model loaded successfully");
+
+          if (this.baseColor) {
+            this.viewerOption.attribute.baseColor = this.baseColor;
+            this.baseColorSetup();
+          }
+        })
+        .catch((error) => console.error("Error while loading model", error));
+    }
   }
 
+  updateAttribute = (isInitial) => {
+    this.model = this.getAttribute("model");
+
+    this.preset = this.getAttribute("preset");
+
+    this.baseColor = this.getAttribute("base_color");
+
+    if (!isInitial) {
+      this.iniAttributeState = {
+        model: !!this.model,
+        preset: !!this.preset,
+        baseColor: !!this.baseColor,
+      };
+    }
+
+    this.viewerOption = new ViewerOption();
+
+    if (this.preset) {
+      this.viewerOption.attribute = ViewerOption[this.preset]();
+    }
+  };
+
+  static get observedAttributes() {
+    return ["model", "preset", "base_color"];
+  }
   attributeChangedCallback(name, oldValue, newValue) {
+    if (this.iniAttributeState.model) {
+      this.iniAttributeState.model = false;
+      return;
+    }
+    if (this.iniAttributeState.preset) {
+      this.iniAttributeState.preset = false;
+      return;
+    }
+    if (this.iniAttributeState.baseColor) {
+      this.iniAttributeState.baseColor = false;
+      return;
+    }
+
     if (name === "preset") {
       this.updateOption(ViewerOption[newValue]() || ViewerOption.Initial);
     }
 
-    if (name === "asset" && oldValue) {
-      this.load(newValue).catch((error) =>
-        console.error("Error while loading model", error),
-      );
+    if (name === "model") {
+      this.load(newValue)
+        .then(() => {
+          console.log("Model loaded successfully");
+        })
+        .catch((error) => console.error("Error while loading model", error));
     }
-
     if (name === "base_color") {
       this.viewerOption.attribute.baseColor = newValue;
-      this.baseColorSetup();
+      this.baseColorSetup("attributeChangedCallback");
     }
   }
 
@@ -119,10 +159,6 @@ class Pov_3d_viewer extends HTMLElement {
 
     this.lightSetup();
     this.backgroundSetup();
-
-    if (this.viewerOption.attribute.baseColor) {
-      this.baseColorSetup();
-    }
   };
 
   controlSetup = () => {
@@ -187,9 +223,13 @@ class Pov_3d_viewer extends HTMLElement {
   };
 
   baseColorSetup = () => {
+    if (!this.object) return;
+
     this.object.traverse((node) => {
       if (node.isMesh) {
-        node.material.map = null;
+        if (this.objectType === "fbx") {
+          node.material.map = null;
+        }
 
         node.material.color.set(
           new Color(this.viewerOption.attribute.baseColor || "#696969"),
@@ -201,15 +241,42 @@ class Pov_3d_viewer extends HTMLElement {
     });
   };
 
-  loadModel = (object, clips, isFbx) => {
-    if (this.object) {
-      this.scene.remove(this.object);
-      this.object = null;
-    }
+  traverseMaterials(object, callback) {
+    object.traverse((node) => {
+      if (!node.geometry) return;
+      const materials = Array.isArray(node.material)
+        ? node.material
+        : [node.material];
+      materials.forEach(callback);
+    });
+  }
+
+  clear() {
+    if (!this.object) return;
+
+    this.scene.remove(this.object);
+
+    // dispose geometry
+    this.object.traverse((node) => {
+      if (!node.geometry) return;
+
+      node.geometry.dispose();
+    });
+
+    // dispose textures
+    this.traverseMaterials(this.object, (material) => {
+      for (const key in material) {
+        if (key !== "envMap" && material[key] && material[key].isTexture) {
+          material[key].dispose();
+        }
+      }
+    });
+  }
+
+  loadModel = (object, clips) => {
+    this.clear();
 
     this.object = object;
-
-    console.log("mj: this.object", this.object);
 
     this.object.updateMatrixWorld();
     const box = new Box3().setFromObject(this.object);
@@ -231,7 +298,7 @@ class Pov_3d_viewer extends HTMLElement {
     this.camera.position.z = size;
     this.camera.lookAt(center);
 
-    if (isFbx) {
+    if (this.viewerOption.attribute.baseColor) {
       this.baseColorSetup();
     }
 
@@ -261,32 +328,39 @@ class Pov_3d_viewer extends HTMLElement {
     if (!file) return;
     const fileExtension = file.split(".").pop();
 
-    if (!fileExtension) throw new Error("File extension not found");
+    if (fileExtension !== "glb" && fileExtension !== "fbx")
+      throw new Error("File extension not found");
 
     if (fileExtension === "glb") {
+      this.objectType = "glb";
       const glfLoader = new GLTFLoader()
         .setCrossOrigin("anonymous")
         .setDRACOLoader(DRACO_LOADER)
         .setKTX2Loader(KTX2_LOADER.detectSupport(this.renderer))
         .setMeshoptDecoder(MeshoptDecoder);
 
-      const gltf = await glfLoader.loadAsync(file).catch((error) => {
-        console.error("Error while loading gltf file", error);
-      });
-      this.loadModel(gltf.scene, gltf.animations);
+      await glfLoader
+        .loadAsync(file)
+        .then((gltf) => {
+          this.loadModel(gltf.scene, gltf.animations);
+        })
+        .catch((error) => {
+          console.error("Error while loading gltf file", error);
+        });
     }
     if (fileExtension === "fbx") {
+      this.objectType = "fbx";
       const fbxLoader = new FBXLoader();
 
-      const fbx = await fbxLoader.loadAsync(file).catch((error) => {
-        console.error("Error while loading fbx file", error);
-      });
-      this.loadModel(fbx, fbx.animations, true);
+      await fbxLoader
+        .loadAsync(file)
+        .then((fbx) => {
+          this.loadModel(fbx, fbx.animations, true);
+        })
+        .catch((error) => {
+          console.error("Error while loading fbx file", error);
+        });
     }
-
-    return Promise.resolve(
-      "Model loaded successfully, you can now use the viewer",
-    );
   }
 
   // async mappingEnvironment(enviroment) {
@@ -307,6 +381,7 @@ class Pov_3d_viewer extends HTMLElement {
     if (this.viewerOption.attribute.autoRotate) {
       this.object?.rotateY(0.005);
     }
+
     this.renderer.render(this.scene, this.camera);
     this.orbitControls.update();
     if (this.mixer) {

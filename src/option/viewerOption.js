@@ -32,8 +32,6 @@ class ViewerOption {
       directIntensity: 0.8 * Math.PI,
       directColor: "#FFFFFF",
       bgColor: "#191919",
-      // setBaseColor: true,
-      // baseColor: "#696969",
     });
   }
 

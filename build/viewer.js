@@ -1,6 +1,6 @@
 var lu = Object.defineProperty;
 var hu = (r, e, t) => e in r ? lu(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
-var Yt = (r, e, t) => (hu(r, typeof e != "symbol" ? e + "" : e, t), t);
+var Zt = (r, e, t) => (hu(r, typeof e != "symbol" ? e + "" : e, t), t);
 /**
  * @license
  * Copyright 2010-2023 Three.js Authors
@@ -2075,7 +2075,7 @@ class pe {
   }
   lookAt(e, t, n) {
     const i = this.elements;
-    return Kt.subVectors(e, t), Kt.lengthSq() === 0 && (Kt.z = 1), Kt.normalize(), Qn.crossVectors(n, Kt), Qn.lengthSq() === 0 && (Math.abs(n.z) === 1 ? Kt.x += 1e-4 : Kt.z += 1e-4, Kt.normalize(), Qn.crossVectors(n, Kt)), Qn.normalize(), Hs.crossVectors(Kt, Qn), i[0] = Qn.x, i[4] = Hs.x, i[8] = Kt.x, i[1] = Qn.y, i[5] = Hs.y, i[9] = Kt.y, i[2] = Qn.z, i[6] = Hs.z, i[10] = Kt.z, this;
+    return Yt.subVectors(e, t), Yt.lengthSq() === 0 && (Yt.z = 1), Yt.normalize(), Qn.crossVectors(n, Yt), Qn.lengthSq() === 0 && (Math.abs(n.z) === 1 ? Yt.x += 1e-4 : Yt.z += 1e-4, Yt.normalize(), Qn.crossVectors(n, Yt)), Qn.normalize(), Hs.crossVectors(Yt, Qn), i[0] = Qn.x, i[4] = Hs.x, i[8] = Yt.x, i[1] = Qn.y, i[5] = Hs.y, i[9] = Yt.y, i[2] = Qn.z, i[6] = Hs.z, i[10] = Yt.z, this;
   }
   multiply(e) {
     return this.multiplyMatrices(this, e);
@@ -2331,7 +2331,7 @@ class pe {
     return e[t] = n[0], e[t + 1] = n[1], e[t + 2] = n[2], e[t + 3] = n[3], e[t + 4] = n[4], e[t + 5] = n[5], e[t + 6] = n[6], e[t + 7] = n[7], e[t + 8] = n[8], e[t + 9] = n[9], e[t + 10] = n[10], e[t + 11] = n[11], e[t + 12] = n[12], e[t + 13] = n[13], e[t + 14] = n[14], e[t + 15] = n[15], e;
   }
 }
-const Si = /* @__PURE__ */ new R(), an = /* @__PURE__ */ new pe(), LA = /* @__PURE__ */ new R(0, 0, 0), DA = /* @__PURE__ */ new R(1, 1, 1), Qn = /* @__PURE__ */ new R(), Hs = /* @__PURE__ */ new R(), Kt = /* @__PURE__ */ new R(), fc = /* @__PURE__ */ new pe(), pc = /* @__PURE__ */ new pt();
+const Si = /* @__PURE__ */ new R(), an = /* @__PURE__ */ new pe(), LA = /* @__PURE__ */ new R(0, 0, 0), DA = /* @__PURE__ */ new R(1, 1, 1), Qn = /* @__PURE__ */ new R(), Hs = /* @__PURE__ */ new R(), Yt = /* @__PURE__ */ new R(), fc = /* @__PURE__ */ new pe(), pc = /* @__PURE__ */ new pt();
 class Vt {
   constructor(e = 0, t = 0, n = 0, i = Vt.DEFAULT_ORDER) {
     this.isEuler = !0, this._x = e, this._y = t, this._z = n, this._order = i;
@@ -3453,7 +3453,7 @@ class gt extends Rt {
   }
 }
 let kA = 0;
-const $t = /* @__PURE__ */ new pe(), fa = /* @__PURE__ */ new st(), Bi = /* @__PURE__ */ new R(), Jt = /* @__PURE__ */ new mn(), fs = /* @__PURE__ */ new mn(), yt = /* @__PURE__ */ new R();
+const $t = /* @__PURE__ */ new pe(), fa = /* @__PURE__ */ new st(), Bi = /* @__PURE__ */ new R(), Kt = /* @__PURE__ */ new mn(), fs = /* @__PURE__ */ new mn(), yt = /* @__PURE__ */ new R();
 class Ut extends $n {
   constructor() {
     super(), this.isBufferGeometry = !0, Object.defineProperty(this, "id", { value: kA++ }), this.uuid = hn(), this.name = "", this.type = "BufferGeometry", this.index = null, this.attributes = {}, this.morphAttributes = {}, this.morphTargetsRelative = !1, this.groups = [], this.boundingBox = null, this.boundingSphere = null, this.drawRange = { start: 0, count: 1 / 0 }, this.userData = {};
@@ -3546,7 +3546,7 @@ class Ut extends $n {
       if (this.boundingBox.setFromBufferAttribute(e), t)
         for (let n = 0, i = t.length; n < i; n++) {
           const s = t[n];
-          Jt.setFromBufferAttribute(s), this.morphTargetsRelative ? (yt.addVectors(this.boundingBox.min, Jt.min), this.boundingBox.expandByPoint(yt), yt.addVectors(this.boundingBox.max, Jt.max), this.boundingBox.expandByPoint(yt)) : (this.boundingBox.expandByPoint(Jt.min), this.boundingBox.expandByPoint(Jt.max));
+          Kt.setFromBufferAttribute(s), this.morphTargetsRelative ? (yt.addVectors(this.boundingBox.min, Kt.min), this.boundingBox.expandByPoint(yt), yt.addVectors(this.boundingBox.max, Kt.max), this.boundingBox.expandByPoint(yt)) : (this.boundingBox.expandByPoint(Kt.min), this.boundingBox.expandByPoint(Kt.max));
         }
     } else
       this.boundingBox.makeEmpty();
@@ -3561,12 +3561,12 @@ class Ut extends $n {
     }
     if (e) {
       const n = this.boundingSphere.center;
-      if (Jt.setFromBufferAttribute(e), t)
+      if (Kt.setFromBufferAttribute(e), t)
         for (let s = 0, a = t.length; s < a; s++) {
           const o = t[s];
-          fs.setFromBufferAttribute(o), this.morphTargetsRelative ? (yt.addVectors(Jt.min, fs.min), Jt.expandByPoint(yt), yt.addVectors(Jt.max, fs.max), Jt.expandByPoint(yt)) : (Jt.expandByPoint(fs.min), Jt.expandByPoint(fs.max));
+          fs.setFromBufferAttribute(o), this.morphTargetsRelative ? (yt.addVectors(Kt.min, fs.min), Kt.expandByPoint(yt), yt.addVectors(Kt.max, fs.max), Kt.expandByPoint(yt)) : (Kt.expandByPoint(fs.min), Kt.expandByPoint(fs.max));
         }
-      Jt.getCenter(n);
+      Kt.getCenter(n);
       let i = 0;
       for (let s = 0, a = e.count; s < a; s++)
         yt.fromBufferAttribute(e, s), i = Math.max(i, n.distanceToSquared(yt));
@@ -13636,8 +13636,8 @@ class fh {
       G.toneMapped && (S === null || S.isXRRenderTarget === !0) && (vt = m.toneMapping);
       const bn = k.morphAttributes.position || k.morphAttributes.normal || k.morphAttributes.color, ct = bn !== void 0 ? bn.length : 0, Ve = Pe.get(G), jr = f.state.lights;
       if (H === !0 && (J === !0 || C !== X)) {
-        const Zt = C === X && G.id === F;
-        Fe.setState(G, C, Zt);
+        const Jt = C === X && G.id === F;
+        Fe.setState(G, C, Jt);
       }
       let ht = !1;
       G.version === Ve.__version ? (Ve.needsLights && Ve.lightsStateVersion !== jr.state.version || Ve.outputColorSpace !== Te || Q.isBatchedMesh && Ve.batching === !1 || !Q.isBatchedMesh && Ve.batching === !0 || Q.isInstancedMesh && Ve.instancing === !1 || !Q.isInstancedMesh && Ve.instancing === !0 || Q.isSkinnedMesh && Ve.skinning === !1 || !Q.isSkinnedMesh && Ve.skinning === !0 || Q.isInstancedMesh && Ve.instancingColor === !0 && Q.instanceColor === null || Q.isInstancedMesh && Ve.instancingColor === !1 && Q.instanceColor !== null || Ve.envMap !== Le || G.fog === !0 && Ve.fog !== ue || Ve.numClippingPlanes !== void 0 && (Ve.numClippingPlanes !== Fe.numPlanes || Ve.numIntersection !== Fe.numIntersection) || Ve.vertexAlphas !== Ge || Ve.vertexTangents !== Ue || Ve.morphTargets !== Qe || Ve.morphNormals !== dt || Ve.morphColors !== Xt || Ve.toneMapping !== vt || Be.isWebGL2 === !0 && Ve.morphTargetsCount !== ct) && (ht = !0) : (ht = !0, Ve.__version = G.version);
@@ -13647,8 +13647,8 @@ class fh {
       const Lt = ei.getUniforms(), ti = Ve.uniforms;
       if (Ee.useProgram(ei.program) && (Do = !0, hs = !0, Xr = !0), G.id !== F && (F = G.id, hs = !0), Do || X !== C) {
         Lt.setValue(P, "projectionMatrix", C.projectionMatrix), Lt.setValue(P, "viewMatrix", C.matrixWorldInverse);
-        const Zt = Lt.map.cameraPosition;
-        Zt !== void 0 && Zt.setValue(P, fe.setFromMatrixPosition(C.matrixWorld)), Be.logarithmicDepthBuffer && Lt.setValue(
+        const Jt = Lt.map.cameraPosition;
+        Jt !== void 0 && Jt.setValue(P, fe.setFromMatrixPosition(C.matrixWorld)), Be.logarithmicDepthBuffer && Lt.setValue(
           P,
           "logDepthBufFC",
           2 / (Math.log(C.far + 1) / Math.LN2)
@@ -13656,16 +13656,16 @@ class fh {
       }
       if (Q.isSkinnedMesh) {
         Lt.setOptional(P, Q, "bindMatrix"), Lt.setOptional(P, Q, "bindMatrixInverse");
-        const Zt = Q.skeleton;
-        Zt && (Be.floatVertexTextures ? (Zt.boneTexture === null && Zt.computeBoneTexture(), Lt.setValue(P, "boneTexture", Zt.boneTexture, v)) : console.warn("THREE.WebGLRenderer: SkinnedMesh can only be used with WebGL 2. With WebGL 1 OES_texture_float and vertex textures support is required."));
+        const Jt = Q.skeleton;
+        Jt && (Be.floatVertexTextures ? (Jt.boneTexture === null && Jt.computeBoneTexture(), Lt.setValue(P, "boneTexture", Jt.boneTexture, v)) : console.warn("THREE.WebGLRenderer: SkinnedMesh can only be used with WebGL 2. With WebGL 1 OES_texture_float and vertex textures support is required."));
       }
       Q.isBatchedMesh && (Lt.setOptional(P, Q, "batchingTexture"), Lt.setValue(P, "batchingTexture", Q._matricesTexture, v));
       const Yr = k.morphAttributes;
       if ((Yr.position !== void 0 || Yr.normal !== void 0 || Yr.color !== void 0 && Be.isWebGL2 === !0) && ke.update(Q, k, ei), (hs || Ve.receiveShadow !== Q.receiveShadow) && (Ve.receiveShadow = Q.receiveShadow, Lt.setValue(P, "receiveShadow", Q.receiveShadow)), G.isMeshGouraudMaterial && G.envMap !== null && (ti.envMap.value = Le, ti.flipEnvMap.value = Le.isCubeTexture && Le.isRenderTargetTexture === !1 ? -1 : 1), hs && (Lt.setValue(P, "toneMappingExposure", m.toneMappingExposure), Ve.needsLights && au(ti, Xr), ue && G.fog === !0 && ae.refreshFogUniforms(ti, ue), ae.refreshMaterialUniforms(ti, G, W, N, he), Er.upload(P, Ro(Ve), ti, v)), G.isShaderMaterial && G.uniformsNeedUpdate === !0 && (Er.upload(P, Ro(Ve), ti, v), G.uniformsNeedUpdate = !1), G.isSpriteMaterial && Lt.setValue(P, "center", Q.center), Lt.setValue(P, "modelViewMatrix", Q.modelViewMatrix), Lt.setValue(P, "normalMatrix", Q.normalMatrix), Lt.setValue(P, "modelMatrix", Q.matrixWorld), G.isShaderMaterial || G.isRawShaderMaterial) {
-        const Zt = G.uniformsGroups;
-        for (let Kr = 0, cu = Zt.length; Kr < cu; Kr++)
+        const Jt = G.uniformsGroups;
+        for (let Kr = 0, cu = Jt.length; Kr < cu; Kr++)
           if (Be.isWebGL2) {
-            const Po = Zt[Kr];
+            const Po = Jt[Kr];
             B.update(Po, ei), B.bind(Po, ei);
           } else
             console.warn("THREE.WebGLRenderer: Uniform Buffer Objects can only be used with WebGL 2.");
@@ -21760,31 +21760,26 @@ class Yi {
   static Initial() {
     return this._attribute = {
       background: !1,
-      autoRotate: !1,
       ambientIntensity: 0.3,
       ambientColor: "#FFFFFF",
       directIntensity: 0.8 * Math.PI,
       directColor: "#FFFFFF",
-      bgColor: "#191919",
-      loadProgress: !0
+      bgColor: "#191919"
     };
   }
   static Polyground() {
     return this._attribute = {
       background: !1,
-      autoRotate: !0,
       ambientIntensity: 0.3,
       ambientColor: "#FFFFFF",
       directIntensity: 0.8 * Math.PI,
       directColor: "#FFFFFF",
-      bgColor: "#191919",
-      loadProgress: !0
+      bgColor: "#191919"
     };
   }
   static Dark() {
     return this._attribute = {
       background: !1,
-      autoRotate: !1,
       ambientIntensity: 0.1,
       ambientColor: "#FFFFFF",
       directIntensity: 0.2 * Math.PI,
@@ -21795,7 +21790,6 @@ class Yi {
   static Bright() {
     return this._attribute = {
       background: !1,
-      autoRotate: !1,
       ambientIntensity: 1,
       ambientColor: "#FFFFFF",
       directIntensity: 5,
@@ -22140,25 +22134,21 @@ const nu = new vh(), iu = `https://unpkg.com/three@0.${Pr}.x`, bb = new Z_(nu).s
 class Ib extends HTMLElement {
   constructor() {
     super();
-    Yt(this, "hasProgressBar", !1);
-    Yt(this, "removeProgressBar", () => {
-      this.viewerOption.attribute.loadProgress && this.shadowRoot.contains(this.progressWrapper) && (this.progress = 100, this.progressBar.style.width = "100%", this.shadowRoot.removeChild(this.progressWrapper));
-    });
-    Yt(this, "initialSetup", () => {
+    Zt(this, "initialSetup", () => {
       this.dispatchEvent(
         new CustomEvent("pov-setup", { detail: { viewer: this } })
       ), this.preset && (this.viewerOption.attribute = Yi[this.preset]()), this.lightSetup(), this.controlSetup(), this.backgroundSetup(), this.shadowRoot.appendChild(this.renderer.domElement), this.canvas = this.shadowRoot.querySelector("canvas"), window.addEventListener("resize", this.resize.bind(this), !1), this.clock = new IE(), this.render();
     });
-    Yt(this, "controlSetup", () => {
+    Zt(this, "controlSetup", () => {
       this.orbitControls = new m_(
         this.camera,
         this.renderer.domElement
       ), this.orbitControls.enableDamping = !0, this.orbitControls.dampingFactor = 0.03;
     });
-    Yt(this, "backgroundSetup", () => {
+    Zt(this, "backgroundSetup", () => {
       this.backgroundColor = new de(this.viewerOption.attribute.bgColor), this.scene.background = this.backgroundColor;
     });
-    Yt(this, "lightSetup", () => {
+    Zt(this, "lightSetup", () => {
       this.ambientLight && this.scene.remove(this.ambientLight), this.directionalLight && this.scene.remove(this.directionalLight), this.directionalLight2 && this.scene.remove(this.directionalLight2), this.directionalLight3 && this.scene.remove(this.directionalLight3), this.ambientLight = new Mh(
         this.viewerOption.attribute.ambientColor,
         this.viewerOption.attribute.ambientIntensity
@@ -22182,15 +22172,13 @@ class Ib extends HTMLElement {
         o.light.position.set(l, i, h), this.scene.add(o.light);
       });
     });
-    Yt(this, "baseColorSetup", () => {
+    Zt(this, "baseColorSetup", () => {
       this.object && this.object.traverse((t) => {
-        t.isMesh && (this.objectType === "fbx" && (t.material.map = null), t.material.color.set(
-          new de(this.viewerOption.attribute.baseColor || "#696969")
-        ), t.material.shininess = 100, t.needsUpdate = !0);
+        t.isMesh && (this.objectType === "fbx" && (t.material.map = null), t.material.color.set(new de(this.baseColor || "#696969")), t.material.shininess = 100, t.needsUpdate = !0);
       });
     });
-    Yt(this, "loadProgressBarSetup", () => {
-      if (!this.viewerOption.attribute.loadProgress)
+    Zt(this, "addProgressBar", () => {
+      if (this.loadProgress !== "on")
         return;
       let t = document.createElement("style");
       t.textContent = `
@@ -22212,42 +22200,50 @@ class Ib extends HTMLElement {
         }
    `, this.shadowRoot.appendChild(t), this.progressWrapper = document.createElement("div"), this.progressWrapper.setAttribute("class", "progress_wrapper"), this.progressBar = document.createElement("div"), this.progressBar.setAttribute("class", "progress_bar"), this.shadowRoot.insertBefore(this.progressWrapper, this.canvas), this.progressWrapper.appendChild(this.progressBar);
     });
-    Yt(this, "loadProgress", (t) => {
-      this.progressWrapper && (this.progress = t.loaded / t.total * 100, !(this.progress > 90) && (this.progressBar.style.width = `${this.progress}%`, this.dispatchEvent(
+    Zt(this, "removeProgressBar", () => {
+      this.loadProgress === "on" && this.shadowRoot.contains(this.progressWrapper) && this.shadowRoot.removeChild(this.progressWrapper);
+    });
+    Zt(this, "setLoadProgress", (t) => {
+      this.progressWrapper && (this.progressState = t.loaded / t.total * 100, this.progressBar.style.width = `${this.progressState}%`, this.dispatchEvent(
         new CustomEvent("pov-event", {
           detail: {
             type: "load-progress",
-            progress: t.loaded / t.total * 100,
             loaded: t.loaded,
             total: t.total
           }
         })
-      )));
+      ));
     });
-    Yt(this, "modelSetup", (t, n) => {
+    Zt(this, "modelSetup", (t, n) => {
       this.clear(), this.object = t, this.object.updateMatrixWorld();
       const i = new mn().setFromObject(this.object), s = i.getSize(new R()).length(), a = i.getCenter(new R());
       if (this.object.position.x += this.object.position.x - a.x, this.object.position.y += this.object.position.y - a.y, this.object.position.z += this.object.position.z - a.z, this.orbitControls.maxDistance = s * 10, this.camera.near = s / 100, this.camera.far = s * 100, this.camera.updateProjectionMatrix(), this.camera.position.copy(a), this.camera.position.x = s / 2, this.camera.position.y = s / 5, this.camera.position.z = s, this.camera.lookAt(a), n.length === 0) {
-        this.scene.add(this.object);
+        this.scene.add(this.object), this.removeProgressBar();
         return;
       }
       const o = n;
-      this.scene.add(this.object), this.mixer = new FE(t), this.action = this.mixer.clipAction(o[0]), this.action.setLoop(ql, 2), this.action.play();
+      this.mixer = new FE(t), this.action = this.mixer.clipAction(o[0]), this.action.setLoop(ql, 2), this.action.play(), this.scene.add(this.object), this.removeProgressBar();
     });
-    Yt(this, "resize", () => {
+    Zt(this, "resize", () => {
       this.camera.aspect = this.viewerWidth / this.viewerHeight, this.camera.updateProjectionMatrix(), this.renderer.setSize(this.viewerWidth, this.viewerHeight);
     });
-    Yt(this, "render", () => {
+    Zt(this, "render", () => {
       var t;
-      requestAnimationFrame(this.render), this.viewerOption.attribute.autoRotate && ((t = this.object) == null || t.rotateY(5e-3)), this.renderer.render(this.scene, this.camera), this.orbitControls.update(), this.mixer && this.mixer.update(this.clock.getDelta());
+      requestAnimationFrame(this.render), this.autoRotate === "on" && ((t = this.object) == null || t.rotateY(5e-3)), this.renderer.render(this.scene, this.camera), this.orbitControls.update(), this.mixer && this.mixer.update(this.clock.getDelta());
     });
-    this.attachShadow({ mode: "open" }), this.viewerOption = new Yi(), this.isConnected ? (this.viewerWidth = this.getBoundingClientRect().width, this.viewerHeight = this.getBoundingClientRect().height) : (this.viewerWidth = 500, this.viewerHeight = 500), this.renderer = new fh({
+    this.attachShadow({ mode: "open" }), this.checkinitalAttribute = {
+      model: !!this.model,
+      preset: !!this.preset,
+      base_color: !!this.baseColor,
+      load_progress: !!this.loadProgress,
+      auto_rotate: !!this.autoRotate
+    }, this.viewerOption = new Yi(), this.isConnected ? (this.viewerWidth = this.getBoundingClientRect().width, this.viewerHeight = this.getBoundingClientRect().height) : (this.viewerWidth = 500, this.viewerHeight = 500), this.renderer = new fh({
       antialias: !0
     }), this.renderer.setPixelRatio(window.devicePixelRatio), this.renderer.setSize(this.viewerWidth, this.viewerHeight, !1), this.pmremGenerator = new so(this.renderer), this.pmremGenerator.compileEquirectangularShader(), this.basicEnvironment = this.pmremGenerator.fromScene(
       new db()
     ).texture, this.scene = new ph(), this.scene.environment = this.basicEnvironment;
     const t = 60, n = this.viewerWidth / this.viewerHeight;
-    this.camera = new Ft(t, n, 0.01, 1e3), this.directionalLight = null, this.directionalLight2 = null, this.directionalLight3 = null, this.initialSetup();
+    this.camera = new Ft(t, n, 0.01, 1e3), this.initialSetup();
   }
   connectedCallback() {
     this.dispatchEvent(
@@ -22255,45 +22251,30 @@ class Ib extends HTMLElement {
     );
   }
   static get observedAttributes() {
-    return ["model", "preset", "base_color", "load_progress"];
+    return ["model", "preset", "base_color"];
   }
   attributeChangedCallback(t, n, i) {
     switch (t) {
-      case "load_progress":
-        i === "on" && this.viewerOption.updateAttribute("loadProgress", !0);
-        break;
       case "preset":
+        if (this.checkinitalAttribute.preset) {
+          this.checkinitalAttribute.preset = !1;
+          return;
+        }
         this.viewerOption.attribute = Yi[i]() || Yi.Initial, this.lightSetup(), this.backgroundSetup();
         break;
       case "model":
         this.load(i).then(() => {
-          this.baseColor && (this.viewerOption.attribute.baseColor = this.baseColor, this.baseColorSetup()), console.log("Model loaded successfully"), this.removeProgressBar();
+          this.baseColor && this.baseColorSetup(), console.log("Model loaded successfully");
         }).catch((s) => console.error("Error while loading model", s));
         break;
       case "base_color":
-        if (this.viewerOption.attribute.baseColor === i || !this.object)
+        if (this.checkinitalAttribute.base_color) {
+          this.checkinitalAttribute.base_color = !1;
           return;
-        this.viewerOption.attribute.baseColor = i, this.baseColorSetup("attributeChangedCallback");
+        }
+        this.baseColorSetup();
         break;
     }
-  }
-  get model() {
-    return this.getAttribute("model");
-  }
-  set model(t) {
-    this.setAttribute("model", t);
-  }
-  get preset() {
-    return this.getAttribute("preset");
-  }
-  set preset(t) {
-    this.setAttribute("preset", t);
-  }
-  get baseColor() {
-    return this.getAttribute("base_color");
-  }
-  set baseColor(t) {
-    this.setAttribute("base_color", t);
   }
   traverseMaterials(t, n) {
     t.traverse((i) => {
@@ -22311,20 +22292,20 @@ class Ib extends HTMLElement {
     }));
   }
   async load(t) {
-    if (this.loadProgressBarSetup(), !t)
+    if (this.addProgressBar(), !t)
       return;
     const n = t.split(".").pop();
     if (n !== "glb" && n !== "fbx" && n !== "obj")
       throw new Error("File extension not found");
-    n === "obj" && (this.objectType = "obj", await new _b().loadAsync(t, (s) => this.loadProgress(s)).then((s) => {
+    n === "obj" && (this.objectType = "obj", await new _b().loadAsync(t, (s) => this.setLoadProgress(s)).then((s) => {
       this.modelSetup(s, []), this.dispatchEvent(new CustomEvent("pov-model-loaded"));
     }).catch((s) => {
       console.error("Error while loading obj file", s);
-    })), n === "glb" && (this.objectType = "glb", await new UE().setCrossOrigin("anonymous").setDRACOLoader(bb).setKTX2Loader(xb.detectSupport(this.renderer)).setMeshoptDecoder(eb).loadAsync(t, (s) => this.loadProgress(s)).then((s) => {
+    })), n === "glb" && (this.objectType = "glb", await new UE().setCrossOrigin("anonymous").setDRACOLoader(bb).setKTX2Loader(xb.detectSupport(this.renderer)).setMeshoptDecoder(eb).loadAsync(t, (s) => this.setLoadProgress(s)).then((s) => {
       this.modelSetup(s.scene, s.animations), this.dispatchEvent(new CustomEvent("pov-model-loaded"));
     }).catch((s) => {
       console.error("Error while loading gltf file", s);
-    })), n === "fbx" && (this.objectType = "fbx", await new k_().loadAsync(t, (s) => this.loadProgress(s)).then((s) => {
+    })), n === "fbx" && (this.objectType = "fbx", await new k_().loadAsync(t, (s) => this.setLoadProgress(s)).then((s) => {
       this.modelSetup(s, s.animations, !0), this.dispatchEvent(
         new CustomEvent("load-finish", { detail: { viewer: this } })
       );
@@ -22357,6 +22338,21 @@ class Ib extends HTMLElement {
   //     ? envMap
   //     : this.backgroundColor;
   // }
+  get model() {
+    return this.getAttribute("model");
+  }
+  get preset() {
+    return this.getAttribute("preset");
+  }
+  get baseColor() {
+    return this.getAttribute("base_color");
+  }
+  get loadProgress() {
+    return this.getAttribute("load_progress");
+  }
+  get autoRotate() {
+    return this.getAttribute("auto_rotate");
+  }
 }
 customElements.define("pov-3d-viewer", Ib);
 export {

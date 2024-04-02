@@ -11,6 +11,10 @@ class ViewerOption {
     this._attribute = { ...this._attribute, ...value };
   }
 
+  updateAttribute(key, value) {
+    this._attribute[key] = value;
+  }
+
   static Initial() {
     return (this._attribute = {
       background: false,

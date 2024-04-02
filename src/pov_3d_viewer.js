@@ -17,6 +17,7 @@ import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
 import ViewerOption from "./option/viewerOption";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
 const MANAGER = new LoadingManager();
 const THREE_PATH = `https://unpkg.com/three@0.${REVISION}.x`;
@@ -28,12 +29,13 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath(
   `${THREE_PATH}/examples/jsm/libs/basis/`,
 );
 
-class Pov_3d_viewer extends HTMLElement {
+export class Pov_3d_viewer extends HTMLElement {
+  hasProgressBar = false;
   constructor() {
     super();
+    this.attachShadow({ mode: "open" });
 
-    this.updateAttribute();
-
+    this.viewerOption = new ViewerOption();
     if (this.isConnected) {
       this.viewerWidth = this.getBoundingClientRect().width;
       this.viewerHeight = this.getBoundingClientRect().height;
@@ -56,7 +58,6 @@ class Pov_3d_viewer extends HTMLElement {
       new RoomEnvironment(),
     ).texture;
 
-    this.appendChild(this.renderer.domElement);
     this.scene = new THREE.Scene();
 
     this.scene.environment = this.basicEnvironment;
@@ -68,6 +69,65 @@ class Pov_3d_viewer extends HTMLElement {
     this.directionalLight = null;
     this.directionalLight2 = null;
     this.directionalLight3 = null;
+  }
+  connectedCallback() {
+    this.initialSetup();
+    this.dispatchEvent(
+      new CustomEvent("pov-ready", { detail: { viewer: this } }),
+    );
+  }
+
+  static get observedAttributes() {
+    return ["model", "preset", "base_color", "load_progress"];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    for (let key in this.iniAttributeState) {
+      if (this.iniAttributeState[key]) {
+        this.iniAttributeState[key] = false;
+        return;
+      }
+    }
+
+    switch (name) {
+      case "load_progress":
+        this.viewerOption.updateAttribute("loadProgress", true);
+        break;
+      case "preset":
+        this.viewerOption.attribute =
+          ViewerOption[newValue]() || ViewerOption.Initial;
+        this.lightSetup();
+        this.backgroundSetup();
+        break;
+      case "model":
+        this.load(newValue)
+          .then(() => {
+            if (this.baseColor) {
+              this.viewerOption.attribute.baseColor = this.baseColor;
+              this.baseColorSetup();
+            }
+            console.log("Model loaded successfully");
+
+            if (this.viewerOption.attribute.loadProgress) {
+              this.progress = 100;
+              this.progressBar.style.width = `${100}%`;
+              // this.shadowRoot.removeChild(this.progressElement);
+            }
+          })
+          .catch((error) => console.error("Error while loading model", error));
+        break;
+      case "base_color":
+        if (this.viewerOption.attribute.baseColor === newValue || !this.object)
+          return;
+
+        this.viewerOption.attribute.baseColor = newValue;
+        this.baseColorSetup("attributeChangedCallback");
+        break;
+    }
+  }
+
+  initialSetup = () => {
+    this.initAttribute();
 
     this.lightSetup();
 
@@ -75,19 +135,25 @@ class Pov_3d_viewer extends HTMLElement {
 
     this.backgroundSetup();
 
+    this.shadowRoot.appendChild(this.renderer.domElement);
+
+    this.canvas = this.shadowRoot.querySelector("canvas");
+
     window.addEventListener("resize", this.resize.bind(this), false);
 
     this.clock = new THREE.Clock();
-    this.render = this.render.bind(this);
     this.render();
-
-    this.dispatchEvent(new Event("onload"));
-    this.updateAttribute(true);
 
     if (this.model) {
       this.load(this.model)
         .then(() => {
           console.log("Model loaded successfully");
+
+          if (this.viewerOption.attribute.loadProgress) {
+            this.progress = 100;
+            this.progressBar.style.width = `${100}%`;
+            this.shadowRoot.removeChild(this.progressElement);
+          }
 
           if (this.baseColor) {
             this.viewerOption.attribute.baseColor = this.baseColor;
@@ -96,69 +162,42 @@ class Pov_3d_viewer extends HTMLElement {
         })
         .catch((error) => console.error("Error while loading model", error));
     }
+  };
+
+  get model() {
+    return this.getAttribute("model");
   }
 
-  updateAttribute = (isInitial) => {
-    this.model = this.getAttribute("model");
+  set model(value) {
+    this.setAttribute("model", value);
+  }
 
-    this.preset = this.getAttribute("preset");
+  get preset() {
+    return this.getAttribute("preset");
+  }
 
-    this.baseColor = this.getAttribute("base_color");
+  set preset(value) {
+    this.setAttribute("preset", value);
+  }
 
-    if (!isInitial) {
-      this.iniAttributeState = {
-        model: !!this.model,
-        preset: !!this.preset,
-        baseColor: !!this.baseColor,
-      };
-    }
+  get baseColor() {
+    return this.getAttribute("base_color");
+  }
 
-    this.viewerOption = new ViewerOption();
+  set baseColor(value) {
+    this.setAttribute("base_color", value);
+  }
+
+  initAttribute = () => {
+    this.iniAttributeState = {
+      model: !!this.model,
+      preset: !!this.preset,
+      baseColor: !!this.baseColor,
+    };
 
     if (this.preset) {
       this.viewerOption.attribute = ViewerOption[this.preset]();
     }
-  };
-
-  static get observedAttributes() {
-    return ["model", "preset", "base_color"];
-  }
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (this.iniAttributeState.model) {
-      this.iniAttributeState.model = false;
-      return;
-    }
-    if (this.iniAttributeState.preset) {
-      this.iniAttributeState.preset = false;
-      return;
-    }
-    if (this.iniAttributeState.baseColor) {
-      this.iniAttributeState.baseColor = false;
-      return;
-    }
-
-    if (name === "preset") {
-      this.updateOption(ViewerOption[newValue]() || ViewerOption.Initial);
-    }
-
-    if (name === "model") {
-      this.load(newValue)
-        .then(() => {
-          console.log("Model loaded successfully");
-        })
-        .catch((error) => console.error("Error while loading model", error));
-    }
-    if (name === "base_color") {
-      this.viewerOption.attribute.baseColor = newValue;
-      this.baseColorSetup("attributeChangedCallback");
-    }
-  }
-
-  updateOption = (option) => {
-    this.viewerOption.attribute = option;
-
-    this.lightSetup();
-    this.backgroundSetup();
   };
 
   controlSetup = () => {
@@ -273,7 +312,134 @@ class Pov_3d_viewer extends HTMLElement {
     });
   }
 
-  loadModel = (object, clips) => {
+  loadProgressBarSetup = () => {
+    if (!this.viewerOption.attribute.loadProgress) return;
+
+    let style = document.createElement("style");
+
+    style.textContent = `
+        .progress_wrapper {
+            width: 100%;
+        height: 20px;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            z-index: 100;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            }
+            
+        .progress_bar {
+            width: 0%;
+            height: 20px;
+            background-color: gray;
+        }
+   `;
+
+    this.shadowRoot.appendChild(style);
+
+    this.progressWrapper = document.createElement("div");
+    this.progressWrapper.setAttribute("class", "progress_wrapper");
+
+    this.shadowRoot.insertBefore(this.progressWrapper, this.canvas);
+
+    this.progressBar = document.createElement("div");
+    this.progressBar.setAttribute("class", "progress_bar");
+
+    this.progressWrapper.appendChild(this.progressBar);
+  };
+
+  loadProgress = (progressEvent) => {
+    if (!this.progressElement) return;
+
+    this.progress = (progressEvent.loaded / progressEvent.total) * 100;
+
+    if (this.progress > 90) return;
+
+    this.progressBar.style.width = `${this.progress}%`;
+    //
+    // if (this.progress === 100 && this.contains(this.progressElement)) {
+    //   this.removeChild(this.progressElement);
+    //   this.hasProgressBar = false;
+    //   console.log("mj: load-finish");
+    // }
+
+    this.dispatchEvent(
+      new CustomEvent("pov-event", {
+        detail: {
+          type: "load-progress",
+          progress: (progressEvent.loaded / progressEvent.total) * 100,
+          loaded: progressEvent.loaded,
+          total: progressEvent.total,
+        },
+      }),
+    );
+  };
+
+  async load(file) {
+    this.loadProgressBarSetup();
+
+    if (!file) return;
+    const fileExtension = file.split(".").pop();
+
+    if (
+      fileExtension !== "glb" &&
+      fileExtension !== "fbx" &&
+      fileExtension !== "obj"
+    )
+      throw new Error("File extension not found");
+
+    if (fileExtension === "obj") {
+      this.objectType = "obj";
+      const objLoader = new OBJLoader();
+      await objLoader
+        .loadAsync(file, (progressEvent) => this.loadProgress(progressEvent))
+        .then((obj) => {
+          this.modelSetup(obj, []);
+          this.dispatchEvent(new CustomEvent("pov-model-loaded"));
+        })
+        .catch((error) => {
+          console.error("Error while loading obj file", error);
+        });
+    }
+
+    if (fileExtension === "glb") {
+      this.objectType = "glb";
+      const glfLoader = new GLTFLoader()
+        .setCrossOrigin("anonymous")
+        .setDRACOLoader(DRACO_LOADER)
+        .setKTX2Loader(KTX2_LOADER.detectSupport(this.renderer))
+        .setMeshoptDecoder(MeshoptDecoder);
+
+      await glfLoader
+        .loadAsync(file, (progressEvent) => this.loadProgress(progressEvent))
+        .then((gltf) => {
+          this.modelSetup(gltf.scene, gltf.animations);
+          this.dispatchEvent(new CustomEvent("pov-model-loaded"));
+        })
+        .catch((error) => {
+          console.error("Error while loading gltf file", error);
+        });
+    }
+    if (fileExtension === "fbx") {
+      this.objectType = "fbx";
+      const fbxLoader = new FBXLoader();
+
+      await fbxLoader
+        .loadAsync(file, (progressEvent) => this.loadProgress(progressEvent))
+        .then((fbx) => {
+          this.modelSetup(fbx, fbx.animations, true);
+          this.dispatchEvent(
+            new CustomEvent("load-finish", { detail: { viewer: this } }),
+          );
+        })
+        .catch((error) => {
+          console.error("Error while loading fbx file", error);
+        });
+    }
+  }
+
+  modelSetup = (object, clips) => {
     this.clear();
 
     this.object = object;
@@ -298,10 +464,6 @@ class Pov_3d_viewer extends HTMLElement {
     this.camera.position.z = size;
     this.camera.lookAt(center);
 
-    if (this.viewerOption.attribute.baseColor) {
-      this.baseColorSetup();
-    }
-
     if (clips.length === 0) {
       this.scene.add(this.object);
       return;
@@ -324,44 +486,35 @@ class Pov_3d_viewer extends HTMLElement {
     this.renderer.setSize(this.viewerWidth, this.viewerHeight);
   };
 
-  async load(file) {
-    if (!file) return;
-    const fileExtension = file.split(".").pop();
+  render = () => {
+    requestAnimationFrame(this.render);
 
-    if (fileExtension !== "glb" && fileExtension !== "fbx")
-      throw new Error("File extension not found");
-
-    if (fileExtension === "glb") {
-      this.objectType = "glb";
-      const glfLoader = new GLTFLoader()
-        .setCrossOrigin("anonymous")
-        .setDRACOLoader(DRACO_LOADER)
-        .setKTX2Loader(KTX2_LOADER.detectSupport(this.renderer))
-        .setMeshoptDecoder(MeshoptDecoder);
-
-      await glfLoader
-        .loadAsync(file)
-        .then((gltf) => {
-          this.loadModel(gltf.scene, gltf.animations);
-        })
-        .catch((error) => {
-          console.error("Error while loading gltf file", error);
-        });
+    if (this.viewerOption.attribute.autoRotate) {
+      this.object?.rotateY(0.005);
     }
-    if (fileExtension === "fbx") {
-      this.objectType = "fbx";
-      const fbxLoader = new FBXLoader();
 
-      await fbxLoader
-        .loadAsync(file)
-        .then((fbx) => {
-          this.loadModel(fbx, fbx.animations, true);
-        })
-        .catch((error) => {
-          console.error("Error while loading fbx file", error);
-        });
+    this.renderer.render(this.scene, this.camera);
+    this.orbitControls.update();
+
+    if (this.mixer) {
+      this.mixer.update(this.clock.getDelta());
     }
-  }
+  };
+
+  // mappingTexture = (path, name) => {
+  //   if (!path || !name || !this.object) return;
+  //   const texture = new THREE.TextureLoader().load(path);
+  //   texture.colorSpace = THREE.SRGBColorSpace;
+  //
+  //   this.object.traverse((node) => {
+  //     if (node.isMesh) {
+  //       const material = node.material;
+  //       material[name] = texture;
+  //
+  //       material.needsUpdate = true;
+  //     }
+  //   });
+  // };
 
   // async mappingEnvironment(enviroment) {
   //   const envMap = await new EXRLoader().loadAsync(enviroment);
@@ -374,35 +527,6 @@ class Pov_3d_viewer extends HTMLElement {
   //     ? envMap
   //     : this.backgroundColor;
   // }
-
-  render = () => {
-    requestAnimationFrame(this.render);
-
-    if (this.viewerOption.attribute.autoRotate) {
-      this.object?.rotateY(0.005);
-    }
-
-    this.renderer.render(this.scene, this.camera);
-    this.orbitControls.update();
-    if (this.mixer) {
-      this.mixer.update(this.clock.getDelta());
-    }
-  };
-
-  mappingTexture = (path, name) => {
-    if (!path || !name || !this.object) return;
-    const texture = new THREE.TextureLoader().load(path);
-    texture.colorSpace = THREE.SRGBColorSpace;
-
-    this.object.traverse((node) => {
-      if (node.isMesh) {
-        const material = node.material;
-        material[name] = texture;
-
-        material.needsUpdate = true;
-      }
-    });
-  };
 }
 
 customElements.define("pov-3d-viewer", Pov_3d_viewer);

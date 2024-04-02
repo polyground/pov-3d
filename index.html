@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="examples/example.style.css" />
     <title>Pov-3d Example</title>
-    <script type="module" src="src/pov_3d_viewer.js"></script>
+    <script type="module" src="./src/pov_3d_viewer.js"></script>
   </head>
   <body>
     <main>
@@ -12,19 +12,16 @@
         <header>
           <h1><a href="index.html">Pov-3d</a></h1>
         </header>
+
         <p>This is a simple example of how to use Pov-3d.</p>
         <nav>
           <!--          <a href="../simple/index.html">Simple example</a>-->
           <!--          <a href="./index.html">Dynamic example</a>-->
         </nav>
       </div>
-      <!--      <pov-3d-viewer-->
-      <!--        id="pov-3d-viewer"-->
-      <!--        model="examples/sampleModel/Old_ToadCenser.glb"-->
-      <!--        preset="Initial"-->
-      <!--        base_color="#ff0000"-->
-      <!--      ></pov-3d-viewer>-->
-      <pov-3d-viewer id="pov-3d-viewer"></pov-3d-viewer>
+
+      <pov-3d-viewer id="pov-3d-viewer" load_progress></pov-3d-viewer>
+
       <div class="option_area">
         <label for="select-base-color-picker">Select BaseColor</label>
         <div class="color_picker_wrap">
@@ -69,11 +66,15 @@
           <option value="examples/sampleModel/Old_Treasure_Box.fbx">
             Fbx Example(Old_Treasure_Box)
           </option>
+          <option value="examples/sampleModel/Religious_Buddhism_Statue.obj">
+            Obj Example(Religious_Buddhism_Statue)
+          </option>
         </select>
       </div>
+
       <script>
         const viewer = document.getElementById("pov-3d-viewer");
-
+        let defaultColor = "#ff0000";
         const baseColorInput = document.getElementById(
           "select-base-color-input",
         );
@@ -81,14 +82,26 @@
           "select-base-color-picker",
         );
 
-        viewer.addEventListener("onload", () => {
-          if (!viewer) return;
+        const presetSelect = document.getElementById("select-preset");
+        presetSelect.value = "Polyground";
+        baseColorInput.value = defaultColor;
+        baseColorPicker.value = defaultColor;
+        const modelSelect = document.getElementById("select-model");
+
+        viewer.addEventListener("pov-ready", (e) => {
+          viewer.setAttribute("preset", presetSelect.value);
           viewer.setAttribute(
             "model",
             "examples/sampleModel/Old_ToadCenser.glb",
           );
-          viewer.setAttribute("preset", "Initial");
-          viewer.setAttribute("base_color", "#ff0000");
+        });
+
+        viewer.addEventListener("pov-event", (e) => {
+          // console.log(e.detail);
+        });
+
+        viewer.addEventListener("pov-model-loaded", () => {
+          // viewer.setAttribute("base_color", baseColorPicker.value);
         });
 
         function changeModel(model) {

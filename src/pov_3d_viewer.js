@@ -17,6 +17,7 @@ import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
 import ViewerOption from "./option/viewerOption";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
 const MANAGER = new LoadingManager();
 const THREE_PATH = `https://unpkg.com/three@0.${REVISION}.x`;
@@ -28,20 +29,13 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath(
   `${THREE_PATH}/examples/jsm/libs/basis/`,
 );
 
-class Pov_3d_viewer extends HTMLElement {
-  static get observedAttributes() {
-    return ["asset", "preset", "base_color"];
-  }
+export class Pov_3d_viewer extends HTMLElement {
+  hasProgressBar = false;
   constructor() {
     super();
-
-    const preset = this.getAttribute("preset");
+    this.attachShadow({ mode: "open" });
 
     this.viewerOption = new ViewerOption();
-    if (preset) {
-      this.viewerOption.attribute = ViewerOption[preset]();
-    }
-
     if (this.isConnected) {
       this.viewerWidth = this.getBoundingClientRect().width;
       this.viewerHeight = this.getBoundingClientRect().height;
@@ -64,7 +58,6 @@ class Pov_3d_viewer extends HTMLElement {
       new RoomEnvironment(),
     ).texture;
 
-    this.appendChild(this.renderer.domElement);
     this.scene = new THREE.Scene();
 
     this.scene.environment = this.basicEnvironment;
@@ -77,53 +70,103 @@ class Pov_3d_viewer extends HTMLElement {
     this.directionalLight2 = null;
     this.directionalLight3 = null;
 
+    this.initialSetup();
+  }
+  connectedCallback() {
+    this.dispatchEvent(
+      new CustomEvent("pov-ready", { detail: { viewer: this } }),
+    );
+  }
+
+  static get observedAttributes() {
+    return ["model", "preset", "base_color", "load_progress"];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    switch (name) {
+      case "load_progress":
+        if (newValue === "on") {
+          this.viewerOption.updateAttribute("loadProgress", true);
+        }
+
+        break;
+      case "preset":
+        this.viewerOption.attribute =
+          ViewerOption[newValue]() || ViewerOption.Initial;
+        this.lightSetup();
+        this.backgroundSetup();
+        break;
+      case "model":
+        this.load(newValue)
+          .then(() => {
+            if (this.baseColor) {
+              this.viewerOption.attribute.baseColor = this.baseColor;
+              this.baseColorSetup();
+            }
+            console.log("Model loaded successfully");
+
+            this.removeProgressBar();
+          })
+          .catch((error) => console.error("Error while loading model", error));
+        break;
+      case "base_color":
+        if (this.viewerOption.attribute.baseColor === newValue || !this.object)
+          return;
+
+        this.viewerOption.attribute.baseColor = newValue;
+        this.baseColorSetup("attributeChangedCallback");
+        break;
+    }
+  }
+
+  initialSetup = () => {
+    this.dispatchEvent(
+      new CustomEvent("pov-setup", { detail: { viewer: this } }),
+    );
+
+    if (this.preset) {
+      this.viewerOption.attribute = ViewerOption[this.preset]();
+    }
+
     this.lightSetup();
 
     this.controlSetup();
 
     this.backgroundSetup();
 
+    this.shadowRoot.appendChild(this.renderer.domElement);
+
+    this.canvas = this.shadowRoot.querySelector("canvas");
+
     window.addEventListener("resize", this.resize.bind(this), false);
 
     this.clock = new THREE.Clock();
-    this.render = this.render.bind(this);
     this.render();
-    this.load(this.getAttribute("asset"))
-      .then(() => {
-        console.log("Model loaded successfully");
-      })
-      .catch((error) => {
-        console.error("Error while loading model", error);
-      });
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "preset") {
-      this.updateOption(ViewerOption[newValue]() || ViewerOption.Initial);
-    }
-
-    if (name === "asset" && oldValue) {
-      this.load(newValue).catch((error) =>
-        console.error("Error while loading model", error),
-      );
-    }
-
-    if (name === "base_color") {
-      this.viewerOption.attribute.baseColor = newValue;
-      this.baseColorSetup();
-    }
-  }
-
-  updateOption = (option) => {
-    this.viewerOption.attribute = option;
-
-    this.lightSetup();
-    this.backgroundSetup();
-
-    if (this.viewerOption.attribute.baseColor) {
-      this.baseColorSetup();
-    }
   };
+
+  get model() {
+    return this.getAttribute("model");
+  }
+
+  set model(value) {
+    this.setAttribute("model", value);
+  }
+
+  get preset() {
+    return this.getAttribute("preset");
+  }
+
+  set preset(value) {
+    this.setAttribute("preset", value);
+  }
+
+  get baseColor() {
+    return this.getAttribute("base_color");
+  }
+
+  set baseColor(value) {
+    this.setAttribute("base_color", value);
+  }
 
   controlSetup = () => {
     this.orbitControls = new OrbitControls(
@@ -187,9 +230,13 @@ class Pov_3d_viewer extends HTMLElement {
   };
 
   baseColorSetup = () => {
+    if (!this.object) return;
+
     this.object.traverse((node) => {
       if (node.isMesh) {
-        node.material.map = null;
+        if (this.objectType === "fbx") {
+          node.material.map = null;
+        }
 
         node.material.color.set(
           new Color(this.viewerOption.attribute.baseColor || "#696969"),
@@ -201,15 +248,173 @@ class Pov_3d_viewer extends HTMLElement {
     });
   };
 
-  loadModel = (object, clips, isFbx) => {
-    if (this.object) {
-      this.scene.remove(this.object);
-      this.object = null;
+  traverseMaterials(object, callback) {
+    object.traverse((node) => {
+      if (!node.geometry) return;
+      const materials = Array.isArray(node.material)
+        ? node.material
+        : [node.material];
+      materials.forEach(callback);
+    });
+  }
+
+  clear() {
+    if (!this.object) return;
+
+    this.scene.remove(this.object);
+
+    // dispose geometry
+    this.object.traverse((node) => {
+      if (!node.geometry) return;
+
+      node.geometry.dispose();
+    });
+
+    // dispose textures
+    this.traverseMaterials(this.object, (material) => {
+      for (const key in material) {
+        if (key !== "envMap" && material[key] && material[key].isTexture) {
+          material[key].dispose();
+        }
+      }
+    });
+  }
+
+  loadProgressBarSetup = () => {
+    if (!this.viewerOption.attribute.loadProgress) return;
+
+    let style = document.createElement("style");
+
+    style.textContent = `
+        .progress_wrapper {
+            width: 100%;
+            height: 20px;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            z-index: 100;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            }
+            
+        .progress_bar {
+            width: 0%;
+            height: 100%;
+            background-color: gray;
+        }
+   `;
+
+    this.shadowRoot.appendChild(style);
+
+    this.progressWrapper = document.createElement("div");
+    this.progressWrapper.setAttribute("class", "progress_wrapper");
+
+    this.progressBar = document.createElement("div");
+
+    this.progressBar.setAttribute("class", "progress_bar");
+
+    this.shadowRoot.insertBefore(this.progressWrapper, this.canvas);
+    this.progressWrapper.appendChild(this.progressBar);
+  };
+
+  loadProgress = (progressEvent) => {
+    if (!this.progressWrapper) return;
+
+    const progressState = (progressEvent.loaded / progressEvent.total) * 100;
+
+    if (progressState > 90) return;
+
+    this.progressBar.style.width = `${progressState}%`;
+
+    this.dispatchEvent(
+      new CustomEvent("pov-event", {
+        detail: {
+          type: "load-progress",
+          progress: (progressEvent.loaded / progressEvent.total) * 100,
+          loaded: progressEvent.loaded,
+          total: progressEvent.total,
+        },
+      }),
+    );
+  };
+
+  removeProgressBar = () => {
+    if (
+      this.viewerOption.attribute.loadProgress &&
+      this.shadowRoot.contains(this.progressWrapper)
+    ) {
+      this.progressBar.style.width = `${100}%`;
+      this.shadowRoot.removeChild(this.progressWrapper);
+    }
+  };
+
+  async load(file) {
+    this.loadProgressBarSetup();
+
+    if (!file) return;
+    const fileExtension = file.split(".").pop();
+
+    if (
+      fileExtension !== "glb" &&
+      fileExtension !== "fbx" &&
+      fileExtension !== "obj"
+    )
+      throw new Error("File extension not found");
+
+    if (fileExtension === "obj") {
+      this.objectType = "obj";
+      const objLoader = new OBJLoader();
+      await objLoader
+        .loadAsync(file, (progressEvent) => this.loadProgress(progressEvent))
+        .then((obj) => {
+          this.modelSetup(obj, []);
+          this.dispatchEvent(new CustomEvent("pov-model-loaded"));
+        })
+        .catch((error) => {
+          console.error("Error while loading obj file", error);
+        });
     }
 
-    this.object = object;
+    if (fileExtension === "glb") {
+      this.objectType = "glb";
+      const glfLoader = new GLTFLoader()
+        .setCrossOrigin("anonymous")
+        .setDRACOLoader(DRACO_LOADER)
+        .setKTX2Loader(KTX2_LOADER.detectSupport(this.renderer))
+        .setMeshoptDecoder(MeshoptDecoder);
 
-    console.log("mj: this.object", this.object);
+      await glfLoader
+        .loadAsync(file, (progressEvent) => this.loadProgress(progressEvent))
+        .then((gltf) => {
+          this.modelSetup(gltf.scene, gltf.animations);
+          this.dispatchEvent(new CustomEvent("pov-model-loaded"));
+        })
+        .catch((error) => {
+          console.error("Error while loading gltf file", error);
+        });
+    }
+    if (fileExtension === "fbx") {
+      this.objectType = "fbx";
+      const fbxLoader = new FBXLoader();
+
+      await fbxLoader
+        .loadAsync(file, (progressEvent) => this.loadProgress(progressEvent))
+        .then((fbx) => {
+          this.modelSetup(fbx, fbx.animations, true);
+          this.dispatchEvent(
+            new CustomEvent("load-finish", { detail: { viewer: this } }),
+          );
+        })
+        .catch((error) => {
+          console.error("Error while loading fbx file", error);
+        });
+    }
+  }
+
+  modelSetup = (object, clips) => {
+    this.clear();
+
+    this.object = object;
 
     this.object.updateMatrixWorld();
     const box = new Box3().setFromObject(this.object);
@@ -230,10 +435,6 @@ class Pov_3d_viewer extends HTMLElement {
     this.camera.position.y = size / 5.0;
     this.camera.position.z = size;
     this.camera.lookAt(center);
-
-    if (isFbx) {
-      this.baseColorSetup();
-    }
 
     if (clips.length === 0) {
       this.scene.add(this.object);
@@ -257,37 +458,35 @@ class Pov_3d_viewer extends HTMLElement {
     this.renderer.setSize(this.viewerWidth, this.viewerHeight);
   };
 
-  async load(file) {
-    if (!file) return;
-    const fileExtension = file.split(".").pop();
+  render = () => {
+    requestAnimationFrame(this.render);
 
-    if (!fileExtension) throw new Error("File extension not found");
-
-    if (fileExtension === "glb") {
-      const glfLoader = new GLTFLoader()
-        .setCrossOrigin("anonymous")
-        .setDRACOLoader(DRACO_LOADER)
-        .setKTX2Loader(KTX2_LOADER.detectSupport(this.renderer))
-        .setMeshoptDecoder(MeshoptDecoder);
-
-      const gltf = await glfLoader.loadAsync(file).catch((error) => {
-        console.error("Error while loading gltf file", error);
-      });
-      this.loadModel(gltf.scene, gltf.animations);
-    }
-    if (fileExtension === "fbx") {
-      const fbxLoader = new FBXLoader();
-
-      const fbx = await fbxLoader.loadAsync(file).catch((error) => {
-        console.error("Error while loading fbx file", error);
-      });
-      this.loadModel(fbx, fbx.animations, true);
+    if (this.viewerOption.attribute.autoRotate) {
+      this.object?.rotateY(0.005);
     }
 
-    return Promise.resolve(
-      "Model loaded successfully, you can now use the viewer",
-    );
-  }
+    this.renderer.render(this.scene, this.camera);
+    this.orbitControls.update();
+
+    if (this.mixer) {
+      this.mixer.update(this.clock.getDelta());
+    }
+  };
+
+  // mappingTexture = (path, name) => {
+  //   if (!path || !name || !this.object) return;
+  //   const texture = new THREE.TextureLoader().load(path);
+  //   texture.colorSpace = THREE.SRGBColorSpace;
+  //
+  //   this.object.traverse((node) => {
+  //     if (node.isMesh) {
+  //       const material = node.material;
+  //       material[name] = texture;
+  //
+  //       material.needsUpdate = true;
+  //     }
+  //   });
+  // };
 
   // async mappingEnvironment(enviroment) {
   //   const envMap = await new EXRLoader().loadAsync(enviroment);
@@ -300,34 +499,6 @@ class Pov_3d_viewer extends HTMLElement {
   //     ? envMap
   //     : this.backgroundColor;
   // }
-
-  render = () => {
-    requestAnimationFrame(this.render);
-
-    if (this.viewerOption.attribute.autoRotate) {
-      this.object?.rotateY(0.005);
-    }
-    this.renderer.render(this.scene, this.camera);
-    this.orbitControls.update();
-    if (this.mixer) {
-      this.mixer.update(this.clock.getDelta());
-    }
-  };
-
-  mappingTexture = (path, name) => {
-    if (!path || !name || !this.object) return;
-    const texture = new THREE.TextureLoader().load(path);
-    texture.colorSpace = THREE.SRGBColorSpace;
-
-    this.object.traverse((node) => {
-      if (node.isMesh) {
-        const material = node.material;
-        material[name] = texture;
-
-        material.needsUpdate = true;
-      }
-    });
-  };
 }
 
 customElements.define("pov-3d-viewer", Pov_3d_viewer);

@@ -12,16 +12,22 @@
         <header>
           <h1><a href="../index.html">Pov-3d</a></h1>
         </header>
+
         <p>This is a simple example of how to use Pov-3d.</p>
         <nav>
           <a href="../simple/index.html">Simple example</a>
           <a href="./index.html">Dynamic example</a>
         </nav>
       </div>
-      <pov-3d-viewer
-        id="pov-3d-viewer"
-        asset="../sampleAssets/Old_ToadCenser.glb"
-      ></pov-3d-viewer>
+
+      <!--      <pov-3d-viewer-->
+      <!--        id="pov-3d-viewer"-->
+      <!--        preset="Polyground"-->
+      <!--        base_color="#ff0000"-->
+      <!--        load_progress="on"-->
+      <!--        model="examples/sampleModel/Old_ToadCenser.glb"-->
+      <!--      ></pov-3d-viewer>-->
+      <pov-3d-viewer id="pov-3d-viewer"></pov-3d-viewer>
       <div class="option_area">
         <label for="select-base-color-picker">Select BaseColor</label>
         <div class="color_picker_wrap">
@@ -55,24 +61,26 @@
         <select
           id="select-model"
           is="pov-3d-viewer"
-          onchange="changeAsset(this.value)"
+          onchange="changeModel(this.value)"
         >
-          <option value="../sampleAssets/Old_ToadCenser.glb">
+          <option value="../sampleModel/Old_ToadCenser.glb">
             Old_ToadCenser
           </option>
-          <option value="../sampleAssets/LittlestTokyo.glb">
-            LittlestTokyo
-          </option>
-          <option value="../sampleAssets/Large_Silver_Pistol.fbx">
+          <option value="../sampleModel/Large_Silver_Pistol.fbx">
             Fbx Example(Large_Silver_Pistol)
           </option>
-          <option value="../sampleAssets/Old_Treasure_Box.fbx">
+          <option value="../sampleModel/Old_Treasure_Box.fbx">
             Fbx Example(Old_Treasure_Box)
+          </option>
+          <option value="../sampleModel/Religious_Buddhism_Statue.obj">
+            Obj Example(Religious_Buddhism_Statue)
           </option>
         </select>
       </div>
+
       <script>
         const viewer = document.getElementById("pov-3d-viewer");
+        let defaultColor = "#ffffff";
         const baseColorInput = document.getElementById(
           "select-base-color-input",
         );
@@ -80,8 +88,31 @@
           "select-base-color-picker",
         );
 
-        function changeAsset(asset) {
-          viewer.setAttribute("asset", asset);
+        const presetSelect = document.getElementById("select-preset");
+        presetSelect.value = "Polyground";
+
+        viewer.addEventListener("pov-setup", (e) => {
+          viewer.setAttribute("preset", presetSelect.value);
+          viewer.setAttribute("load_progress", "on");
+        });
+
+        viewer.addEventListener("pov-ready", () => {
+          viewer.setAttribute("model", "../sampleModel/Old_ToadCenser.glb");
+          viewer.setAttribute("base_color", baseColorPicker.value);
+        });
+
+        viewer.addEventListener("pov-event", (e) => {
+          // console.log(e.detail);
+        });
+
+        viewer.addEventListener("pov-model-loaded", () => {
+          baseColorInput.value = defaultColor;
+          baseColorPicker.value = defaultColor;
+          viewer.setAttribute("base_color", baseColorPicker.value);
+        });
+
+        function changeModel(model) {
+          viewer.setAttribute("model", model);
         }
         function changePreset(preset) {
           viewer.setAttribute("preset", preset);
@@ -94,6 +125,7 @@
           const isValidHexColor = /^#([0-9A-F]{3}){1,2}$/i.test(baseColor);
           if (isValidHexColor) {
             baseColorPicker.value = baseColor;
+            viewer.setAttribute("base_color", baseColor);
           } else {
             baseColorInput.value = "";
           }

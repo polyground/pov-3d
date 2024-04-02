@@ -11,6 +11,10 @@ class ViewerOption {
     this._attribute = { ...this._attribute, ...value };
   }
 
+  updateAttribute(key, value) {
+    this._attribute[key] = value;
+  }
+
   static Initial() {
     return (this._attribute = {
       background: false,
@@ -20,6 +24,7 @@ class ViewerOption {
       directIntensity: 0.8 * Math.PI,
       directColor: "#FFFFFF",
       bgColor: "#191919",
+      loadProgress: true,
     });
   }
 
@@ -32,8 +37,7 @@ class ViewerOption {
       directIntensity: 0.8 * Math.PI,
       directColor: "#FFFFFF",
       bgColor: "#191919",
-      // setBaseColor: true,
-      // baseColor: "#696969",
+      loadProgress: true,
     });
   }
 

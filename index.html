@@ -20,8 +20,14 @@
         </nav>
       </div>
 
-      <pov-3d-viewer id="pov-3d-viewer" load_progress></pov-3d-viewer>
-
+      <!--      <pov-3d-viewer-->
+      <!--        id="pov-3d-viewer"-->
+      <!--        preset="Polyground"-->
+      <!--        base_color="#ff0000"-->
+      <!--        load_progress="on"-->
+      <!--        model="examples/sampleModel/Old_ToadCenser.glb"-->
+      <!--      ></pov-3d-viewer>-->
+      <pov-3d-viewer id="pov-3d-viewer"></pov-3d-viewer>
       <div class="option_area">
         <label for="select-base-color-picker">Select BaseColor</label>
         <div class="color_picker_wrap">
@@ -74,7 +80,7 @@
 
       <script>
         const viewer = document.getElementById("pov-3d-viewer");
-        let defaultColor = "#ff0000";
+        let defaultColor = "#ffffff";
         const baseColorInput = document.getElementById(
           "select-base-color-input",
         );
@@ -84,16 +90,18 @@
 
         const presetSelect = document.getElementById("select-preset");
         presetSelect.value = "Polyground";
-        baseColorInput.value = defaultColor;
-        baseColorPicker.value = defaultColor;
-        const modelSelect = document.getElementById("select-model");
 
-        viewer.addEventListener("pov-ready", (e) => {
+        viewer.addEventListener("pov-setup", (e) => {
           viewer.setAttribute("preset", presetSelect.value);
+          viewer.setAttribute("load_progress", "on");
+        });
+
+        viewer.addEventListener("pov-ready", () => {
           viewer.setAttribute(
             "model",
             "examples/sampleModel/Old_ToadCenser.glb",
           );
+          viewer.setAttribute("base_color", baseColorPicker.value);
         });
 
         viewer.addEventListener("pov-event", (e) => {
@@ -101,7 +109,9 @@
         });
 
         viewer.addEventListener("pov-model-loaded", () => {
-          // viewer.setAttribute("base_color", baseColorPicker.value);
+          baseColorInput.value = defaultColor;
+          baseColorPicker.value = defaultColor;
+          viewer.setAttribute("base_color", baseColorPicker.value);
         });
 
         function changeModel(model) {

@@ -69,29 +69,37 @@ export class Pov_3d_viewer extends HTMLElement {
     this.directionalLight = null;
     this.directionalLight2 = null;
     this.directionalLight3 = null;
+
+    this.initialSetup();
   }
   connectedCallback() {
-    this.initialSetup();
     this.dispatchEvent(
       new CustomEvent("pov-ready", { detail: { viewer: this } }),
     );
   }
+
+  removeProgressBar = () => {
+    if (
+      this.viewerOption.attribute.loadProgress &&
+      this.shadowRoot.contains(this.progressWrapper)
+    ) {
+      this.progress = 100;
+      this.progressBar.style.width = `${100}%`;
+      this.shadowRoot.removeChild(this.progressWrapper);
+    }
+  };
 
   static get observedAttributes() {
     return ["model", "preset", "base_color", "load_progress"];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    for (let key in this.iniAttributeState) {
-      if (this.iniAttributeState[key]) {
-        this.iniAttributeState[key] = false;
-        return;
-      }
-    }
-
     switch (name) {
       case "load_progress":
-        this.viewerOption.updateAttribute("loadProgress", true);
+        if (newValue === "on") {
+          this.viewerOption.updateAttribute("loadProgress", true);
+        }
+
         break;
       case "preset":
         this.viewerOption.attribute =
@@ -108,11 +116,7 @@ export class Pov_3d_viewer extends HTMLElement {
             }
             console.log("Model loaded successfully");
 
-            if (this.viewerOption.attribute.loadProgress) {
-              this.progress = 100;
-              this.progressBar.style.width = `${100}%`;
-              // this.shadowRoot.removeChild(this.progressElement);
-            }
+            this.removeProgressBar();
           })
           .catch((error) => console.error("Error while loading model", error));
         break;
@@ -127,7 +131,13 @@ export class Pov_3d_viewer extends HTMLElement {
   }
 
   initialSetup = () => {
-    this.initAttribute();
+    this.dispatchEvent(
+      new CustomEvent("pov-setup", { detail: { viewer: this } }),
+    );
+
+    if (this.preset) {
+      this.viewerOption.attribute = ViewerOption[this.preset]();
+    }
 
     this.lightSetup();
 
@@ -143,25 +153,6 @@ export class Pov_3d_viewer extends HTMLElement {
 
     this.clock = new THREE.Clock();
     this.render();
-
-    if (this.model) {
-      this.load(this.model)
-        .then(() => {
-          console.log("Model loaded successfully");
-
-          if (this.viewerOption.attribute.loadProgress) {
-            this.progress = 100;
-            this.progressBar.style.width = `${100}%`;
-            this.shadowRoot.removeChild(this.progressElement);
-          }
-
-          if (this.baseColor) {
-            this.viewerOption.attribute.baseColor = this.baseColor;
-            this.baseColorSetup();
-          }
-        })
-        .catch((error) => console.error("Error while loading model", error));
-    }
   };
 
   get model() {
@@ -187,18 +178,6 @@ export class Pov_3d_viewer extends HTMLElement {
   set baseColor(value) {
     this.setAttribute("base_color", value);
   }
-
-  initAttribute = () => {
-    this.iniAttributeState = {
-      model: !!this.model,
-      preset: !!this.preset,
-      baseColor: !!this.baseColor,
-    };
-
-    if (this.preset) {
-      this.viewerOption.attribute = ViewerOption[this.preset]();
-    }
-  };
 
   controlSetup = () => {
     this.orbitControls = new OrbitControls(
@@ -320,7 +299,7 @@ export class Pov_3d_viewer extends HTMLElement {
     style.textContent = `
         .progress_wrapper {
             width: 100%;
-        height: 20px;
+            height: 20px;
             background-color: rgba(0,0,0,0.5);
             display: flex;
             z-index: 100;
@@ -331,7 +310,7 @@ export class Pov_3d_viewer extends HTMLElement {
             
         .progress_bar {
             width: 0%;
-            height: 20px;
+            height: 100%;
             background-color: gray;
         }
    `;
@@ -341,28 +320,22 @@ export class Pov_3d_viewer extends HTMLElement {
     this.progressWrapper = document.createElement("div");
     this.progressWrapper.setAttribute("class", "progress_wrapper");
 
-    this.shadowRoot.insertBefore(this.progressWrapper, this.canvas);
-
     this.progressBar = document.createElement("div");
+
     this.progressBar.setAttribute("class", "progress_bar");
 
+    this.shadowRoot.insertBefore(this.progressWrapper, this.canvas);
     this.progressWrapper.appendChild(this.progressBar);
   };
 
   loadProgress = (progressEvent) => {
-    if (!this.progressElement) return;
+    if (!this.progressWrapper) return;
 
     this.progress = (progressEvent.loaded / progressEvent.total) * 100;
 
     if (this.progress > 90) return;
 
     this.progressBar.style.width = `${this.progress}%`;
-    //
-    // if (this.progress === 100 && this.contains(this.progressElement)) {
-    //   this.removeChild(this.progressElement);
-    //   this.hasProgressBar = false;
-    //   console.log("mj: load-finish");
-    // }
 
     this.dispatchEvent(
       new CustomEvent("pov-event", {

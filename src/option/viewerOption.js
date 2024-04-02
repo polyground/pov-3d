@@ -18,33 +18,28 @@ class ViewerOption {
   static Initial() {
     return (this._attribute = {
       background: false,
-      autoRotate: false,
       ambientIntensity: 0.3,
       ambientColor: "#FFFFFF",
       directIntensity: 0.8 * Math.PI,
       directColor: "#FFFFFF",
       bgColor: "#191919",
-      loadProgress: true,
     });
   }
 
   static Polyground() {
     return (this._attribute = {
       background: false,
-      autoRotate: true,
       ambientIntensity: 0.3,
       ambientColor: "#FFFFFF",
       directIntensity: 0.8 * Math.PI,
       directColor: "#FFFFFF",
       bgColor: "#191919",
-      loadProgress: true,
     });
   }
 
   static Dark() {
     return (this._attribute = {
       background: false,
-      autoRotate: false,
       ambientIntensity: 0.1,
       ambientColor: "#FFFFFF",
       directIntensity: 0.2 * Math.PI,
@@ -56,7 +51,6 @@ class ViewerOption {
   static Bright() {
     return (this._attribute = {
       background: false,
-      autoRotate: false,
       ambientIntensity: 1,
       ambientColor: "#FFFFFF",
       directIntensity: 5,

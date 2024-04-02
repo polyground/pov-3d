@@ -30,7 +30,6 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath(
 );
 
 export class Pov_3d_viewer extends HTMLElement {
-  hasProgressBar = false;
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -78,29 +77,14 @@ export class Pov_3d_viewer extends HTMLElement {
     );
   }
 
-  removeProgressBar = () => {
-    if (
-      this.viewerOption.attribute.loadProgress &&
-      this.shadowRoot.contains(this.progressWrapper)
-    ) {
-      this.progress = 100;
-      this.progressBar.style.width = `${100}%`;
-      this.shadowRoot.removeChild(this.progressWrapper);
-    }
-  };
-
   static get observedAttributes() {
     return ["model", "preset", "base_color", "load_progress"];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    switch (name) {
-      case "load_progress":
-        if (newValue === "on") {
-          this.viewerOption.updateAttribute("loadProgress", true);
-        }
+    console.log("mj: name", name);
 
-        break;
+    switch (name) {
       case "preset":
         this.viewerOption.attribute =
           ViewerOption[newValue]() || ViewerOption.Initial;
@@ -111,21 +95,14 @@ export class Pov_3d_viewer extends HTMLElement {
         this.load(newValue)
           .then(() => {
             if (this.baseColor) {
-              this.viewerOption.attribute.baseColor = this.baseColor;
               this.baseColorSetup();
             }
             console.log("Model loaded successfully");
-
-            this.removeProgressBar();
           })
           .catch((error) => console.error("Error while loading model", error));
         break;
       case "base_color":
-        if (this.viewerOption.attribute.baseColor === newValue || !this.object)
-          return;
-
-        this.viewerOption.attribute.baseColor = newValue;
-        this.baseColorSetup("attributeChangedCallback");
+        this.baseColorSetup();
         break;
     }
   }
@@ -154,30 +131,6 @@ export class Pov_3d_viewer extends HTMLElement {
     this.clock = new THREE.Clock();
     this.render();
   };
-
-  get model() {
-    return this.getAttribute("model");
-  }
-
-  set model(value) {
-    this.setAttribute("model", value);
-  }
-
-  get preset() {
-    return this.getAttribute("preset");
-  }
-
-  set preset(value) {
-    this.setAttribute("preset", value);
-  }
-
-  get baseColor() {
-    return this.getAttribute("base_color");
-  }
-
-  set baseColor(value) {
-    this.setAttribute("base_color", value);
-  }
 
   controlSetup = () => {
     this.orbitControls = new OrbitControls(
@@ -249,9 +202,7 @@ export class Pov_3d_viewer extends HTMLElement {
           node.material.map = null;
         }
 
-        node.material.color.set(
-          new Color(this.viewerOption.attribute.baseColor || "#696969"),
-        );
+        node.material.color.set(new Color(this.baseColor || "#696969"));
 
         node.material.shininess = 100;
         node.needsUpdate = true;
@@ -291,8 +242,8 @@ export class Pov_3d_viewer extends HTMLElement {
     });
   }
 
-  loadProgressBarSetup = () => {
-    if (!this.viewerOption.attribute.loadProgress) return;
+  addProgressBar = () => {
+    if (this.loadProgress !== "on") return;
 
     let style = document.createElement("style");
 
@@ -328,20 +279,26 @@ export class Pov_3d_viewer extends HTMLElement {
     this.progressWrapper.appendChild(this.progressBar);
   };
 
-  loadProgress = (progressEvent) => {
+  removeProgressBar = () => {
+    if (
+      this.loadProgress === "on" &&
+      this.shadowRoot.contains(this.progressWrapper)
+    ) {
+      this.shadowRoot.removeChild(this.progressWrapper);
+    }
+  };
+
+  setLoadProgress = (progressEvent) => {
     if (!this.progressWrapper) return;
 
-    this.progress = (progressEvent.loaded / progressEvent.total) * 100;
+    this.progressState = (progressEvent.loaded / progressEvent.total) * 100;
 
-    if (this.progress > 90) return;
-
-    this.progressBar.style.width = `${this.progress}%`;
+    this.progressBar.style.width = `${this.progressState}%`;
 
     this.dispatchEvent(
       new CustomEvent("pov-event", {
         detail: {
           type: "load-progress",
-          progress: (progressEvent.loaded / progressEvent.total) * 100,
           loaded: progressEvent.loaded,
           total: progressEvent.total,
         },
@@ -350,7 +307,7 @@ export class Pov_3d_viewer extends HTMLElement {
   };
 
   async load(file) {
-    this.loadProgressBarSetup();
+    this.addProgressBar();
 
     if (!file) return;
     const fileExtension = file.split(".").pop();
@@ -366,7 +323,7 @@ export class Pov_3d_viewer extends HTMLElement {
       this.objectType = "obj";
       const objLoader = new OBJLoader();
       await objLoader
-        .loadAsync(file, (progressEvent) => this.loadProgress(progressEvent))
+        .loadAsync(file, (progressEvent) => this.setLoadProgress(progressEvent))
         .then((obj) => {
           this.modelSetup(obj, []);
           this.dispatchEvent(new CustomEvent("pov-model-loaded"));
@@ -385,7 +342,7 @@ export class Pov_3d_viewer extends HTMLElement {
         .setMeshoptDecoder(MeshoptDecoder);
 
       await glfLoader
-        .loadAsync(file, (progressEvent) => this.loadProgress(progressEvent))
+        .loadAsync(file, (progressEvent) => this.setLoadProgress(progressEvent))
         .then((gltf) => {
           this.modelSetup(gltf.scene, gltf.animations);
           this.dispatchEvent(new CustomEvent("pov-model-loaded"));
@@ -399,7 +356,7 @@ export class Pov_3d_viewer extends HTMLElement {
       const fbxLoader = new FBXLoader();
 
       await fbxLoader
-        .loadAsync(file, (progressEvent) => this.loadProgress(progressEvent))
+        .loadAsync(file, (progressEvent) => this.setLoadProgress(progressEvent))
         .then((fbx) => {
           this.modelSetup(fbx, fbx.animations, true);
           this.dispatchEvent(
@@ -439,18 +396,20 @@ export class Pov_3d_viewer extends HTMLElement {
 
     if (clips.length === 0) {
       this.scene.add(this.object);
+      this.removeProgressBar();
       return;
     }
 
     const animationsClips = clips;
-
-    this.scene.add(this.object);
 
     this.mixer = new THREE.AnimationMixer(object);
 
     this.action = this.mixer.clipAction(animationsClips[0]);
     this.action.setLoop(THREE.LoopRepeat, 2);
     this.action.play();
+    this.scene.add(this.object);
+
+    this.removeProgressBar();
   };
 
   resize = () => {
@@ -462,7 +421,7 @@ export class Pov_3d_viewer extends HTMLElement {
   render = () => {
     requestAnimationFrame(this.render);
 
-    if (this.viewerOption.attribute.autoRotate) {
+    if (this.autoRotate === "on") {
       this.object?.rotateY(0.005);
     }
 
@@ -500,6 +459,26 @@ export class Pov_3d_viewer extends HTMLElement {
   //     ? envMap
   //     : this.backgroundColor;
   // }
+
+  get model() {
+    return this.getAttribute("model");
+  }
+
+  get preset() {
+    return this.getAttribute("preset");
+  }
+
+  get baseColor() {
+    return this.getAttribute("base_color");
+  }
+
+  get loadProgress() {
+    return this.getAttribute("load_progress");
+  }
+
+  get autoRotate() {
+    return this.getAttribute("auto_rotate");
+  }
 }
 
 customElements.define("pov-3d-viewer", Pov_3d_viewer);

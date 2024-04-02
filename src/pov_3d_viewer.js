@@ -32,7 +32,16 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath(
 export class Pov_3d_viewer extends HTMLElement {
   constructor() {
     super();
+
     this.attachShadow({ mode: "open" });
+
+    this.checkinitalAttribute = {
+      model: !!this.model,
+      preset: !!this.preset,
+      base_color: !!this.baseColor,
+      load_progress: !!this.loadProgress,
+      auto_rotate: !!this.autoRotate,
+    };
 
     this.viewerOption = new ViewerOption();
     if (this.isConnected) {
@@ -65,10 +74,6 @@ export class Pov_3d_viewer extends HTMLElement {
     const aspect = this.viewerWidth / this.viewerHeight;
     this.camera = new PerspectiveCamera(fov, aspect, 0.01, 1000);
 
-    this.directionalLight = null;
-    this.directionalLight2 = null;
-    this.directionalLight3 = null;
-
     this.initialSetup();
   }
   connectedCallback() {
@@ -78,14 +83,16 @@ export class Pov_3d_viewer extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["model", "preset", "base_color", "load_progress"];
+    return ["model", "preset", "base_color"];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    console.log("mj: name", name);
-
     switch (name) {
       case "preset":
+        if (this.checkinitalAttribute.preset) {
+          this.checkinitalAttribute.preset = false;
+          return;
+        }
         this.viewerOption.attribute =
           ViewerOption[newValue]() || ViewerOption.Initial;
         this.lightSetup();
@@ -102,6 +109,10 @@ export class Pov_3d_viewer extends HTMLElement {
           .catch((error) => console.error("Error while loading model", error));
         break;
       case "base_color":
+        if (this.checkinitalAttribute.base_color) {
+          this.checkinitalAttribute.base_color = false;
+          return;
+        }
         this.baseColorSetup();
         break;
     }

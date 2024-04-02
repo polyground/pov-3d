@@ -20,15 +20,15 @@
         </nav>
       </div>
 
-      <pov-3d-viewer
-        id="pov-3d-viewer"
-        auto_rotate="on"
-        model="examples/sampleModel/Old_ToadCenser.glb"
-        load_progress="on"
-        base_color="#ff0000"
-        preset="Polyground"
-      ></pov-3d-viewer>
-      <!--      <pov-3d-viewer id="pov-3d-viewer"></pov-3d-viewer>-->
+      <!--      <pov-3d-viewer-->
+      <!--        id="pov-3d-viewer"-->
+      <!--        auto_rotate="on"-->
+      <!--        model="examples/sampleModel/Old_ToadCenser.glb"-->
+      <!--        load_progress="on"-->
+      <!--        base_color="#ff0000"-->
+      <!--        preset="Polyground"-->
+      <!--      ></pov-3d-viewer>-->
+      <pov-3d-viewer id="pov-3d-viewer"></pov-3d-viewer>
       <div class="option_area">
         <label for="select-base-color-picker">Select BaseColor</label>
         <div class="color_picker_wrap">
@@ -81,6 +81,7 @@
 
       <script>
         const viewer = document.getElementById("pov-3d-viewer");
+
         let defaultColor = "#ff0000";
         const baseColorInput = document.getElementById(
           "select-base-color-input",
@@ -92,29 +93,31 @@
         baseColorPicker.value = defaultColor;
 
         const presetSelect = document.getElementById("select-preset");
-        presetSelect.value = "Polyground";
+        presetSelect.value = "Initial";
 
-        // viewer.addEventListener("pov-setup", () => {
-        //   viewer.setAttribute("preset", presetSelect.value);
-        //   viewer.setAttribute("base_color", baseColorPicker.value);
-        //   viewer.setAttribute("load_progress", "on");
-        //   viewer.setAttribute("auto_rotate", "on");
-        // });
-        //
-        // viewer.addEventListener("pov-ready", () => {
-        //   viewer.setAttribute(
-        //     "model",
-        //     "examples/sampleModel/Old_ToadCenser.glb",
-        //   );
-        // });
-        //
-        // viewer.addEventListener("pov-event", (e) => {
-        //   if (e.detail.type === "load_progress") {
-        //     console.log(e.detail.loaded, e.detail.total);
-        //   }
-        // });
-        //
-        // viewer.addEventListener("pov-model-loaded", () => {});
+        viewer.addEventListener("pov-setup", () => {
+          viewer.setAttribute("preset", presetSelect.value);
+          viewer.setAttribute("base_color", baseColorPicker.value);
+          viewer.setAttribute("auto_rotate", "on");
+          viewer.setAttribute("load_progress", "on");
+        });
+
+        viewer.addEventListener("pov-ready", () => {
+          viewer.setAttribute(
+            "model",
+            "examples/sampleModel/Old_ToadCenser.glb",
+          );
+        });
+
+        viewer.addEventListener("pov-event", (e) => {
+          if (e.detail.type === "load_progress") {
+            console.log(e.detail.loaded, e.detail.total);
+          }
+        });
+
+        viewer.addEventListener("pov-model-loaded", () => {
+          console.log("Model Load Successfully");
+        });
 
         function changeModel(model) {
           viewer.setAttribute("model", model);

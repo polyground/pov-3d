@@ -57,6 +57,7 @@ export class Pov_3d_viewer extends HTMLElement {
     });
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
+
     this.renderer.setSize(this.viewerWidth, this.viewerHeight);
 
     this.pmremGenerator = new PMREMGenerator(this.renderer);
@@ -386,7 +387,7 @@ export class Pov_3d_viewer extends HTMLElement {
     this.object = object;
 
     this.object.updateMatrixWorld();
-    const box = new Box3().setFromObject(this.object);
+    const box = new Box3().setFromObject(object);
     const size = box.getSize(new Vector3()).length();
     const center = box.getCenter(new Vector3());
 
@@ -424,8 +425,9 @@ export class Pov_3d_viewer extends HTMLElement {
   };
 
   resize = () => {
-    this.viewerWidth = this.clientWidth;
-    this.viewerHeight = this.clientHeight;
+    this.viewerWidth = this.shadowRoot.host.clientWidth;
+    this.viewerHeight = this.shadowRoot.host.clientHeight;
+
     this.camera.aspect = this.viewerWidth / this.viewerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.viewerWidth, this.viewerHeight);

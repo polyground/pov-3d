@@ -39,7 +39,6 @@ footer {
 }
 .side_box {
   width: 30%;
-  max-width: 300px;
   height: 100vh;
   border-radius: 20px;
   padding: 20px;
@@ -70,7 +69,7 @@ nav a {
 }
 
 pov-3d-viewer {
-  width: 100%;
+  width: 70%;
   height: 100%;
 }
 

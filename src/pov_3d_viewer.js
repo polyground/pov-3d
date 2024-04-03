@@ -10,14 +10,14 @@ import {
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
-import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
+import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { EXRLoader } from "three/addons/loaders/EXRLoader.js";
 import ViewerOption from "./option/viewerOption";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+import { OBJLoader } from "three/addons/loaders//OBJLoader.js";
 
 const MANAGER = new LoadingManager();
 const THREE_PATH = `https://unpkg.com/three@0.${REVISION}.x`;
@@ -45,8 +45,8 @@ export class Pov_3d_viewer extends HTMLElement {
 
     this.viewerOption = new ViewerOption();
     if (this.isConnected) {
-      this.viewerWidth = this.getBoundingClientRect().width;
-      this.viewerHeight = this.getBoundingClientRect().height;
+      this.viewerWidth = this.clientWidth;
+      this.viewerHeight = this.clientHeight;
     } else {
       this.viewerWidth = 500;
       this.viewerHeight = 500;
@@ -57,7 +57,7 @@ export class Pov_3d_viewer extends HTMLElement {
     });
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setSize(this.viewerWidth, this.viewerHeight, false);
+    this.renderer.setSize(this.viewerWidth, this.viewerHeight);
 
     this.pmremGenerator = new PMREMGenerator(this.renderer);
     this.pmremGenerator.compileEquirectangularShader();
@@ -424,6 +424,8 @@ export class Pov_3d_viewer extends HTMLElement {
   };
 
   resize = () => {
+    this.viewerWidth = this.clientWidth;
+    this.viewerHeight = this.clientHeight;
     this.camera.aspect = this.viewerWidth / this.viewerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.viewerWidth, this.viewerHeight);

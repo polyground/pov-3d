@@ -1,0 +1,25 @@
+{
+  "name": "pov-3d",
+  "private": false,
+  "version": "0.0.1",
+  "type": "module",
+  "license": "MIT",
+  "main": "src/pov_3d_viewer.js",
+  "repository": "https://github.com/polyground/pov-3d.git",
+  "author": "김명준 <acspp2017@gmail.com>",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "vite": "^5.1.6"
+  },
+  "dependencies": {
+    "@types/three": "^0.162.0",
+    "prettier": "^3.2.5",
+    "three": "^0.161.0"
+  }
+}
+

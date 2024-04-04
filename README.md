@@ -3,12 +3,6 @@
 
 The Web 3D Viewer is a free, open-source web solution for visualizing and navigating 3D models in a browser. With this library, you can easily add 3D model viewer capabilities to your web application without complex setup.
 
-- Key Features:
-  - Free and open-source. 
-  - Supports various 3D file formats.
-  - Responsive design for use on all devices.
-  - Utilizes WebGL for high-performance 3D rendering.
-
 ## Getting Started
 
 This is an example of how you may give instructions on setting up your project locally.

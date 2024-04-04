@@ -18,20 +18,20 @@ To get a local copy up and running follow these simple example steps.
 
 This is an example of how to list things you need to use the software and how to install them.
 * Installation
-  ```sh
+  ```sh 
   npm install pov-3d 
   yarn add pov-3d
   ```
 
 * Example npm Package Usage
-```angular2html
+```html
 <head>
   <script src="node_modules/pov-3d/build/pov-3d.js"></script>
 </head>
 ```
 
 * Using unpkg.com with `<script>` Tags
-```angular2html
+```html
 <head>
     <script src="https://unpkg.com/pov-3d/build/pov-3d.js"></script>
 </head>
@@ -42,7 +42,7 @@ This is an example of how to list things you need to use the software and how to
 The Web 3D Viewer library is designed to be easy to use and integrate into your web application. You can add a 3D model viewer to your web page by including the `pov-3d-viewer` custom element and setting the desired attributes.
 
 ### Basic Example
-```angular2html
+```html
 <pov-3d-viewer model="path/to/3d-model.glb"></pov-3d-viewer>
 ```
 
@@ -57,7 +57,7 @@ The `pov-3d-viewer` custom element supports the following attributes:
 - `loadProgress` - Whether to display a loading progress bar.
 
 ### Example with Attributes
-```angular2html
+```html
 <pov-3d-viewer 
   model="path/to/3d-model.glb" 
   preset="default" 
@@ -72,10 +72,28 @@ The `pov-3d-viewer` custom element emits the following events:
 - `pov-setup` - Emitted when the default environment setup is completed for the pov-3d-viewer.
 - `pov-ready` - Emitted when the 3D model is ready to be loaded.
 - `pov-event` - Emitted when a custom event is triggered.
+  - `load-progress` - Emitted when the 3D model loading progress changes.
+  ```javascript
+  this.dispatchEvent(
+      new CustomEvent("pov-event", {
+        detail: {
+          type: "load-progress",
+          loaded: progressEvent.loaded,
+          total: progressEvent.total,
+        },
+      }),
+    );
+  ```
 - `pov-model-load` - Emitted when the 3D model is loaded.
 
+### When working with events
+- Always use the pov- prefix when using events. 
+- Event sequence:
+<br/>
+`pov-setup` -> `pov-ready` -> `pov-model-load`
+
 ### Example with Events
-```angular2html
+```html
 <pov-3d-viewer></pov-3d-viewer>
 <script>
     const povViewer = document.querySelector('pov-3d-viewer');

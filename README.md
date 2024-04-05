@@ -83,7 +83,6 @@ The `pov-3d-viewer` custom element emits the following events:
 ### When working with events
 - Always use the pov- prefix when using events. 
 - Event sequence:
-<br/>
 `pov-setup` -> `pov-ready` -> `pov-model-load`
 
 ### Example with Events

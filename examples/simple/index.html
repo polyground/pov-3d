@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="../example.style.css" />
     <title>Pov-3d Example</title>
-    <script type="module" src="../../build/viewer.js"></script>
+    <script type="module" src="../../build/pov-3d.js"></script>
   </head>
   <body>
     <main>
@@ -20,7 +20,10 @@
       </div>
       <pov-3d-viewer
         id="pov-3d-viewer"
-        asset="../sampleAssets/Old_ToadCenser.glb"
+        preset="Polyground"
+        base_color="#ffffff"
+        load_progress="on"
+        model="../sampleModel/Old_ToadCenser.glb"
       ></pov-3d-viewer>
     </main>
     <footer>

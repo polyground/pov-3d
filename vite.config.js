@@ -5,7 +5,7 @@ export default defineConfig({
     lib: {
       entry: "src/pov_3d_viewer.js",
       name: "pov-3d",
-      fileName: "viewer",
+      fileName: "pov-3d",
       formats: ["es", "cjs"],
     },
     outDir: "build",

@@ -84,7 +84,7 @@ export class Pov_3d_viewer extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["model", "preset", "base_color"];
+    return ["model", "preset", "base_color",'background_color'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -97,6 +97,9 @@ export class Pov_3d_viewer extends HTMLElement {
         this.viewerOption.attribute =
           ViewerOption[newValue]() || ViewerOption.Initial;
         this.lightSetup();
+        this.backgroundSetup();
+        break;
+      case "background_color":
         this.backgroundSetup();
         break;
       case "model":
@@ -116,6 +119,7 @@ export class Pov_3d_viewer extends HTMLElement {
         }
         this.baseColorSetup();
         break;
+
     }
   }
 
@@ -154,8 +158,7 @@ export class Pov_3d_viewer extends HTMLElement {
   };
 
   backgroundSetup = () => {
-    this.backgroundColor = new Color(this.viewerOption.attribute.bgColor);
-    this.scene.background = this.backgroundColor;
+    this.scene.background =new Color(this.backgroundColor);
   };
 
   lightSetup = () => {
@@ -485,6 +488,8 @@ export class Pov_3d_viewer extends HTMLElement {
 
   get baseColor() {
     return this.getAttribute("base_color");
+  }  get backgroundColor() {
+    return this.getAttribute("background_color");
   }
 
   get loadProgress() {

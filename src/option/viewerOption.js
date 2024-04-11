@@ -22,7 +22,6 @@ class ViewerOption {
       ambientColor: "#FFFFFF",
       directIntensity: 0.8 * Math.PI,
       directColor: "#FFFFFF",
-      bgColor: "#191919",
     });
   }
 
@@ -33,7 +32,6 @@ class ViewerOption {
       ambientColor: "#FFFFFF",
       directIntensity: 0.8 * Math.PI,
       directColor: "#FFFFFF",
-      bgColor: "#191919",
     });
   }
 
@@ -44,7 +42,6 @@ class ViewerOption {
       ambientColor: "#FFFFFF",
       directIntensity: 0.2 * Math.PI,
       directColor: "#FFFFFF",
-      bgColor: "#191919",
     });
   }
 
@@ -55,7 +52,6 @@ class ViewerOption {
       ambientColor: "#FFFFFF",
       directIntensity: 5,
       directColor: "#FFFFFF",
-      bgColor: "#191919",
     });
   }
 }

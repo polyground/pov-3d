@@ -21763,8 +21763,7 @@ class Yi {
       ambientIntensity: 0.3,
       ambientColor: "#FFFFFF",
       directIntensity: 0.8 * Math.PI,
-      directColor: "#FFFFFF",
-      bgColor: "#191919"
+      directColor: "#FFFFFF"
     };
   }
   static Polyground() {
@@ -21773,8 +21772,7 @@ class Yi {
       ambientIntensity: 0.3,
       ambientColor: "#FFFFFF",
       directIntensity: 0.8 * Math.PI,
-      directColor: "#FFFFFF",
-      bgColor: "#191919"
+      directColor: "#FFFFFF"
     };
   }
   static Dark() {
@@ -21783,8 +21781,7 @@ class Yi {
       ambientIntensity: 0.1,
       ambientColor: "#FFFFFF",
       directIntensity: 0.2 * Math.PI,
-      directColor: "#FFFFFF",
-      bgColor: "#191919"
+      directColor: "#FFFFFF"
     };
   }
   static Bright() {
@@ -21793,8 +21790,7 @@ class Yi {
       ambientIntensity: 1,
       ambientColor: "#FFFFFF",
       directIntensity: 5,
-      directColor: "#FFFFFF",
-      bgColor: "#191919"
+      directColor: "#FFFFFF"
     };
   }
 }
@@ -22137,7 +22133,9 @@ class Ib extends HTMLElement {
     Zt(this, "initialSetup", () => {
       this.dispatchEvent(
         new CustomEvent("pov-setup", { detail: { viewer: this } })
-      ), this.preset && (this.viewerOption.attribute = Yi[this.preset]()), this.lightSetup(), this.controlSetup(), this.backgroundSetup(), this.shadowRoot.appendChild(this.renderer.domElement), this.canvas = this.shadowRoot.querySelector("canvas"), window.addEventListener("resize", this.resize.bind(this), !1), this.clock = new IE(), this.render();
+      ), this.preset && (this.viewerOption.attribute = Yi[this.preset]()), this.viewerWidth = this.width || this.clientWidth || 500, this.viewerHeight = this.height || this.clientHeight || 500, this.renderer.setSize(this.viewerWidth, this.viewerHeight);
+      const t = 60, n = this.viewerWidth / this.viewerHeight;
+      this.camera = new Ft(t, n, 0.01, 1e3), this.lightSetup(), this.controlSetup(), this.backgroundSetup(), this.shadowRoot.appendChild(this.renderer.domElement), this.canvas = this.shadowRoot.querySelector("canvas"), window.addEventListener("resize", this.resize.bind(this), !1), this.clock = new IE(), this.render();
     });
     Zt(this, "controlSetup", () => {
       this.orbitControls = new m_(
@@ -22146,7 +22144,7 @@ class Ib extends HTMLElement {
       ), this.orbitControls.enableDamping = !0, this.orbitControls.dampingFactor = 0.03;
     });
     Zt(this, "backgroundSetup", () => {
-      this.backgroundColor = new de(this.viewerOption.attribute.bgColor), this.scene.background = this.backgroundColor;
+      this.scene.background = new de(this.backgroundColor);
     });
     Zt(this, "lightSetup", () => {
       this.ambientLight && this.scene.remove(this.ambientLight), this.directionalLight && this.scene.remove(this.directionalLight), this.directionalLight2 && this.scene.remove(this.directionalLight2), this.directionalLight3 && this.scene.remove(this.directionalLight3), this.ambientLight = new Mh(
@@ -22225,7 +22223,7 @@ class Ib extends HTMLElement {
       this.mixer = new FE(t), this.action = this.mixer.clipAction(o[0]), this.action.setLoop(ql, 2), this.action.play(), this.scene.add(this.object), this.removeProgressBar();
     });
     Zt(this, "resize", () => {
-      this.viewerWidth = this.shadowRoot.host.clientWidth, this.viewerHeight = this.shadowRoot.host.clientHeight, this.camera.aspect = this.viewerWidth / this.viewerHeight, this.camera.updateProjectionMatrix(), this.renderer.setSize(this.viewerWidth, this.viewerHeight);
+      this.width && this.height || (this.viewerWidth = this.width || this.shadowRoot.host.clientWidth, this.viewerHeight = this.height || this.shadowRoot.host.clientHeight, this.camera.aspect = this.viewerWidth / this.viewerHeight, this.camera.updateProjectionMatrix(), this.renderer.setSize(this.viewerWidth, this.viewerHeight));
     });
     Zt(this, "render", () => {
       var t;
@@ -22237,13 +22235,11 @@ class Ib extends HTMLElement {
       base_color: !!this.baseColor,
       load_progress: !!this.loadProgress,
       auto_rotate: !!this.autoRotate
-    }, this.viewerOption = new Yi(), this.isConnected ? (this.viewerWidth = this.clientWidth, this.viewerHeight = this.clientHeight) : (this.viewerWidth = 500, this.viewerHeight = 500), this.renderer = new fh({
+    }, this.viewerOption = new Yi(), this.renderer = new fh({
       antialias: !0
-    }), this.renderer.setPixelRatio(window.devicePixelRatio), this.renderer.setSize(this.viewerWidth, this.viewerHeight), this.pmremGenerator = new so(this.renderer), this.pmremGenerator.compileEquirectangularShader(), this.basicEnvironment = this.pmremGenerator.fromScene(
+    }), this.renderer.setPixelRatio(window.devicePixelRatio), this.pmremGenerator = new so(this.renderer), this.pmremGenerator.compileEquirectangularShader(), this.basicEnvironment = this.pmremGenerator.fromScene(
       new db()
-    ).texture, this.scene = new ph(), this.scene.environment = this.basicEnvironment;
-    const t = 60, n = this.viewerWidth / this.viewerHeight;
-    this.camera = new Ft(t, n, 0.01, 1e3), this.initialSetup();
+    ).texture, this.scene = new ph(), this.scene.environment = this.basicEnvironment, this.initialSetup();
   }
   connectedCallback() {
     this.dispatchEvent(
@@ -22251,16 +22247,32 @@ class Ib extends HTMLElement {
     );
   }
   static get observedAttributes() {
-    return ["model", "preset", "base_color"];
+    return [
+      "model",
+      "preset",
+      "base_color",
+      "background_color",
+      "width",
+      "height"
+    ];
   }
   attributeChangedCallback(t, n, i) {
     switch (t) {
+      case "width":
+        this.viewerWidth = i, this.resize();
+        break;
+      case "height":
+        this.viewerHeight = i, this.resize();
+        break;
       case "preset":
         if (this.checkinitalAttribute.preset) {
           this.checkinitalAttribute.preset = !1;
           return;
         }
         this.viewerOption.attribute = Yi[i]() || Yi.Initial, this.lightSetup(), this.backgroundSetup();
+        break;
+      case "background_color":
+        this.backgroundSetup();
         break;
       case "model":
         this.load(i).then(() => {
@@ -22341,11 +22353,20 @@ class Ib extends HTMLElement {
   get model() {
     return this.getAttribute("model");
   }
+  get width() {
+    return this.getAttribute("width");
+  }
+  get height() {
+    return this.getAttribute("height");
+  }
   get preset() {
     return this.getAttribute("preset");
   }
   get baseColor() {
     return this.getAttribute("base_color");
+  }
+  get backgroundColor() {
+    return this.getAttribute("background_color") || "#000000";
   }
   get loadProgress() {
     return this.getAttribute("load_progress");

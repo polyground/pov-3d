@@ -23,6 +23,8 @@
 
       <!--      <pov-3d-viewer-->
       <!--        id="pov-3d-viewer"-->
+      <!--        width="700"-->
+      <!--        height="700"-->
       <!--        auto_rotate="on"-->
       <!--        model="examples/sampleModel/Old_ToadCenser.glb"-->
       <!--        load_progress="on"-->
@@ -127,6 +129,7 @@
         presetSelect.value = "Initial";
 
         viewer.addEventListener("pov-setup", () => {
+          viewer.setAttribute("height", "700");
           viewer.setAttribute("preset", presetSelect.value);
           viewer.setAttribute("base_color", baseColorPicker.value);
           viewer.setAttribute("background_color", "#000000");

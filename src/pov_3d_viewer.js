@@ -44,21 +44,12 @@ export class Pov_3d_viewer extends HTMLElement {
     };
 
     this.viewerOption = new ViewerOption();
-    if (this.isConnected) {
-      this.viewerWidth = this.clientWidth;
-      this.viewerHeight = this.clientHeight;
-    } else {
-      this.viewerWidth = 500;
-      this.viewerHeight = 500;
-    }
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
     });
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
-
-    this.renderer.setSize(this.viewerWidth, this.viewerHeight);
 
     this.pmremGenerator = new PMREMGenerator(this.renderer);
     this.pmremGenerator.compileEquirectangularShader();
@@ -71,10 +62,6 @@ export class Pov_3d_viewer extends HTMLElement {
 
     this.scene.environment = this.basicEnvironment;
 
-    const fov = 60;
-    const aspect = this.viewerWidth / this.viewerHeight;
-    this.camera = new PerspectiveCamera(fov, aspect, 0.01, 1000);
-
     this.initialSetup();
   }
   connectedCallback() {
@@ -84,11 +71,26 @@ export class Pov_3d_viewer extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["model", "preset", "base_color",'background_color'];
+    return [
+      "model",
+      "preset",
+      "base_color",
+      "background_color",
+      "width",
+      "height",
+    ];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     switch (name) {
+      case "width":
+        this.viewerWidth = newValue;
+        this.resize();
+        break;
+      case "height":
+        this.viewerHeight = newValue;
+        this.resize();
+        break;
       case "preset":
         if (this.checkinitalAttribute.preset) {
           this.checkinitalAttribute.preset = false;
@@ -119,7 +121,6 @@ export class Pov_3d_viewer extends HTMLElement {
         }
         this.baseColorSetup();
         break;
-
     }
   }
 
@@ -131,6 +132,14 @@ export class Pov_3d_viewer extends HTMLElement {
     if (this.preset) {
       this.viewerOption.attribute = ViewerOption[this.preset]();
     }
+
+    this.viewerWidth = this.width || this.clientWidth || 500;
+    this.viewerHeight = this.height || this.clientHeight || 500;
+
+    this.renderer.setSize(this.viewerWidth, this.viewerHeight);
+    const fov = 60;
+    const aspect = this.viewerWidth / this.viewerHeight;
+    this.camera = new PerspectiveCamera(fov, aspect, 0.01, 1000);
 
     this.lightSetup();
 
@@ -158,7 +167,7 @@ export class Pov_3d_viewer extends HTMLElement {
   };
 
   backgroundSetup = () => {
-    this.scene.background =new Color(this.backgroundColor);
+    this.scene.background = new Color(this.backgroundColor);
   };
 
   lightSetup = () => {
@@ -428,8 +437,9 @@ export class Pov_3d_viewer extends HTMLElement {
   };
 
   resize = () => {
-    this.viewerWidth = this.shadowRoot.host.clientWidth;
-    this.viewerHeight = this.shadowRoot.host.clientHeight;
+    if (this.width && this.height) return;
+    this.viewerWidth = this.width || this.shadowRoot.host.clientWidth;
+    this.viewerHeight = this.height || this.shadowRoot.host.clientHeight;
 
     this.camera.aspect = this.viewerWidth / this.viewerHeight;
     this.camera.updateProjectionMatrix();
@@ -482,14 +492,23 @@ export class Pov_3d_viewer extends HTMLElement {
     return this.getAttribute("model");
   }
 
+  get width() {
+    return this.getAttribute("width");
+  }
+
+  get height() {
+    return this.getAttribute("height");
+  }
+
   get preset() {
     return this.getAttribute("preset");
   }
 
   get baseColor() {
     return this.getAttribute("base_color");
-  }  get backgroundColor() {
-    return this.getAttribute("background_color");
+  }
+  get backgroundColor() {
+    return this.getAttribute("background_color") || "#000000";
   }
 
   get loadProgress() {

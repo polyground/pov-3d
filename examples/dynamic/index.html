@@ -40,6 +40,25 @@
           />
         </div>
 
+        <label for="select-background-color-picker"
+          >Select BackgroundColor</label
+        >
+        <div class="color_picker_wrap">
+          <input
+            class="color_picker"
+            type="color"
+            id="select-background-color-picker"
+            onchange="changeBackgroundColorPicker(this.value)"
+          />
+          <input
+            class="color_picker_input"
+            type="text"
+            id="select-background-color-input"
+            aria-label="select-background-color-input"
+            onfocusout="changeBackgroundColorInput(this.value)"
+          />
+        </div>
+
         <label for="select-preset">Select Preset</label>
         <select
           id="select-preset"
@@ -75,15 +94,26 @@
       <script>
         const viewer = document.getElementById("pov-3d-viewer");
 
-        let defaultColor = "#ff0000";
+        let defaultBaseColor = "#ff0000";
+        let defaultBackgroundColor = "#000000";
+
         const baseColorInput = document.getElementById(
           "select-base-color-input",
         );
         const baseColorPicker = document.getElementById(
           "select-base-color-picker",
         );
-        baseColorInput.value = defaultColor;
-        baseColorPicker.value = defaultColor;
+        baseColorInput.value = defaultBaseColor;
+        baseColorPicker.value = defaultBaseColor;
+
+        const backgroundColorInput = document.getElementById(
+          "select-background-color-input",
+        );
+        const backgroundColorPicker = document.getElementById(
+          "select-background-color-picker",
+        );
+        backgroundColorInput.value = defaultBackgroundColor;
+        backgroundColorPicker.value = defaultBackgroundColor;
 
         const presetSelect = document.getElementById("select-preset");
         presetSelect.value = "Initial";
@@ -91,6 +121,7 @@
         viewer.addEventListener("pov-setup", () => {
           viewer.setAttribute("preset", presetSelect.value);
           viewer.setAttribute("base_color", baseColorPicker.value);
+          viewer.setAttribute("background_color", "#000000");
           viewer.setAttribute("auto_rotate", "on");
           viewer.setAttribute("load_progress", "on");
         });
@@ -126,6 +157,21 @@
             viewer.setAttribute("base_color", baseColor);
           } else {
             baseColorInput.value = "";
+          }
+        }
+        function changeBackgroundColorPicker(backgroundColor) {
+          viewer.setAttribute("background_color", backgroundColor);
+          backgroundColorInput.value = backgroundColor;
+        }
+        function changeBackgroundColorInput(backgroundColor) {
+          const isValidHexColor = /^#([0-9A-F]{3}){1,2}$/i.test(
+            backgroundColor,
+          );
+          if (isValidHexColor) {
+            backgroundColorPicker.value = backgroundColor;
+            viewer.setAttribute("background_color", backgroundColor);
+          } else {
+            backgroundColorInput.value = "";
           }
         }
       </script>

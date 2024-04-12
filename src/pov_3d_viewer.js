@@ -437,7 +437,6 @@ export class Pov_3d_viewer extends HTMLElement {
   };
 
   resize = () => {
-    if (this.width && this.height) return;
     this.viewerWidth = this.width || this.shadowRoot.host.clientWidth;
     this.viewerHeight = this.height || this.shadowRoot.host.clientHeight;
 

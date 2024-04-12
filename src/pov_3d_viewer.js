@@ -71,26 +71,11 @@ export class Pov_3d_viewer extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return [
-      "model",
-      "preset",
-      "base_color",
-      "background_color",
-      "width",
-      "height",
-    ];
+    return ["model", "preset", "base_color", "background_color"];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     switch (name) {
-      case "width":
-        this.viewerWidth = newValue;
-        this.resize();
-        break;
-      case "height":
-        this.viewerHeight = newValue;
-        this.resize();
-        break;
       case "preset":
         if (this.checkinitalAttribute.preset) {
           this.checkinitalAttribute.preset = false;
@@ -133,8 +118,8 @@ export class Pov_3d_viewer extends HTMLElement {
       this.viewerOption.attribute = ViewerOption[this.preset]();
     }
 
-    this.viewerWidth = this.width || this.clientWidth || 500;
-    this.viewerHeight = this.height || this.clientHeight || 500;
+    this.viewerWidth = this.shadowRoot.host.clientWidth || 500;
+    this.viewerHeight = this.shadowRoot.host.clientHeight || 500;
 
     this.renderer.setSize(this.viewerWidth, this.viewerHeight);
     const fov = 60;
@@ -437,8 +422,8 @@ export class Pov_3d_viewer extends HTMLElement {
   };
 
   resize = () => {
-    this.viewerWidth = this.width || this.shadowRoot.host.clientWidth;
-    this.viewerHeight = this.height || this.shadowRoot.host.clientHeight;
+    this.viewerWidth = this.shadowRoot.host.clientWidth;
+    this.viewerHeight = this.shadowRoot.host.clientHeight;
 
     this.camera.aspect = this.viewerWidth / this.viewerHeight;
     this.camera.updateProjectionMatrix();
@@ -489,14 +474,6 @@ export class Pov_3d_viewer extends HTMLElement {
 
   get model() {
     return this.getAttribute("model");
-  }
-
-  get width() {
-    return this.getAttribute("width");
-  }
-
-  get height() {
-    return this.getAttribute("height");
   }
 
   get preset() {

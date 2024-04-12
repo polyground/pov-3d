@@ -129,7 +129,6 @@
         presetSelect.value = "Initial";
 
         viewer.addEventListener("pov-setup", () => {
-          viewer.setAttribute("height", "700");
           viewer.setAttribute("preset", presetSelect.value);
           viewer.setAttribute("base_color", baseColorPicker.value);
           viewer.setAttribute("background_color", "#000000");

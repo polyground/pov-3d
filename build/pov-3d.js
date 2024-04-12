@@ -22131,9 +22131,7 @@ class Ib extends HTMLElement {
   constructor() {
     super();
     Zt(this, "initialSetup", () => {
-      this.dispatchEvent(
-        new CustomEvent("pov-setup", { detail: { viewer: this } })
-      ), this.preset && (this.viewerOption.attribute = Yi[this.preset]()), this.viewerWidth = this.width || this.clientWidth || 500, this.viewerHeight = this.height || this.clientHeight || 500, this.renderer.setSize(this.viewerWidth, this.viewerHeight);
+      this.preset && (this.viewerOption.attribute = Yi[this.preset]()), this.viewerWidth = this.shadowRoot.host.clientWidth || 500, this.viewerHeight = this.shadowRoot.host.clientHeight || 500, this.renderer.setSize(this.viewerWidth, this.viewerHeight);
       const t = 60, n = this.viewerWidth / this.viewerHeight;
       this.camera = new Ft(t, n, 0.01, 1e3), this.lightSetup(), this.controlSetup(), this.backgroundSetup(), this.shadowRoot.appendChild(this.renderer.domElement), this.canvas = this.shadowRoot.querySelector("canvas"), window.addEventListener("resize", this.resize.bind(this), !1), this.clock = new IE(), this.render();
     });
@@ -22213,7 +22211,7 @@ class Ib extends HTMLElement {
       ));
     });
     Zt(this, "modelSetup", (t, n) => {
-      this.clear(), this.object = t, this.object.updateMatrixWorld();
+      this.object = t, this.object.updateMatrixWorld();
       const i = new mn().setFromObject(t), s = i.getSize(new R()).length(), a = i.getCenter(new R());
       if (this.object.position.x += this.object.position.x - a.x, this.object.position.y += this.object.position.y - a.y, this.object.position.z += this.object.position.z - a.z, this.orbitControls.maxDistance = s * 10, this.camera.near = s / 100, this.camera.far = s * 100, this.camera.updateProjectionMatrix(), this.camera.position.copy(a), this.camera.position.x = s / 2, this.camera.position.y = s / 5, this.camera.position.z = s, this.camera.lookAt(a), n.length === 0) {
         this.scene.add(this.object), this.removeProgressBar();
@@ -22223,7 +22221,7 @@ class Ib extends HTMLElement {
       this.mixer = new FE(t), this.action = this.mixer.clipAction(o[0]), this.action.setLoop(ql, 2), this.action.play(), this.scene.add(this.object), this.removeProgressBar();
     });
     Zt(this, "resize", () => {
-      this.width && this.height || (this.viewerWidth = this.width || this.shadowRoot.host.clientWidth, this.viewerHeight = this.height || this.shadowRoot.host.clientHeight, this.camera.aspect = this.viewerWidth / this.viewerHeight, this.camera.updateProjectionMatrix(), this.renderer.setSize(this.viewerWidth, this.viewerHeight));
+      this.viewerWidth = this.shadowRoot.host.clientWidth, this.viewerHeight = this.shadowRoot.host.clientHeight, this.camera.aspect = this.viewerWidth / this.viewerHeight, this.camera.updateProjectionMatrix(), this.renderer.setSize(this.viewerWidth, this.viewerHeight);
     });
     Zt(this, "render", () => {
       var t;
@@ -22239,31 +22237,20 @@ class Ib extends HTMLElement {
       antialias: !0
     }), this.renderer.setPixelRatio(window.devicePixelRatio), this.pmremGenerator = new so(this.renderer), this.pmremGenerator.compileEquirectangularShader(), this.basicEnvironment = this.pmremGenerator.fromScene(
       new db()
-    ).texture, this.scene = new ph(), this.scene.environment = this.basicEnvironment, this.initialSetup();
+    ).texture, this.scene = new ph(), this.scene.environment = this.basicEnvironment;
   }
   connectedCallback() {
     this.dispatchEvent(
+      new CustomEvent("pov-setup", { detail: { viewer: this } })
+    ), this.initialSetup(), this.dispatchEvent(
       new CustomEvent("pov-ready", { detail: { viewer: this } })
     );
   }
   static get observedAttributes() {
-    return [
-      "model",
-      "preset",
-      "base_color",
-      "background_color",
-      "width",
-      "height"
-    ];
+    return ["model", "preset", "base_color", "background_color"];
   }
   attributeChangedCallback(t, n, i) {
     switch (t) {
-      case "width":
-        this.viewerWidth = i, this.resize();
-        break;
-      case "height":
-        this.viewerHeight = i, this.resize();
-        break;
       case "preset":
         if (this.checkinitalAttribute.preset) {
           this.checkinitalAttribute.preset = !1;
@@ -22275,7 +22262,7 @@ class Ib extends HTMLElement {
         this.backgroundSetup();
         break;
       case "model":
-        this.load(i).then(() => {
+        this.clear(), this.load(i).then(() => {
           this.baseColor && this.baseColorSetup(), console.log("Model loaded successfully");
         }).catch((s) => console.error("Error while loading model", s));
         break;
@@ -22352,12 +22339,6 @@ class Ib extends HTMLElement {
   // }
   get model() {
     return this.getAttribute("model");
-  }
-  get width() {
-    return this.getAttribute("width");
-  }
-  get height() {
-    return this.getAttribute("height");
   }
   get preset() {
     return this.getAttribute("preset");

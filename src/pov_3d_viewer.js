@@ -61,10 +61,14 @@ export class Pov_3d_viewer extends HTMLElement {
     this.scene = new THREE.Scene();
 
     this.scene.environment = this.basicEnvironment;
-
-    this.initialSetup();
   }
   connectedCallback() {
+    this.dispatchEvent(
+      new CustomEvent("pov-setup", { detail: { viewer: this } }),
+    );
+
+    this.initialSetup();
+
     this.dispatchEvent(
       new CustomEvent("pov-ready", { detail: { viewer: this } }),
     );
@@ -90,6 +94,7 @@ export class Pov_3d_viewer extends HTMLElement {
         this.backgroundSetup();
         break;
       case "model":
+        this.clear();
         this.load(newValue)
           .then(() => {
             if (this.baseColor) {
@@ -110,10 +115,6 @@ export class Pov_3d_viewer extends HTMLElement {
   }
 
   initialSetup = () => {
-    this.dispatchEvent(
-      new CustomEvent("pov-setup", { detail: { viewer: this } }),
-    );
-
     if (this.preset) {
       this.viewerOption.attribute = ViewerOption[this.preset]();
     }
@@ -379,8 +380,6 @@ export class Pov_3d_viewer extends HTMLElement {
   }
 
   modelSetup = (object, clips) => {
-    this.clear();
-
     this.object = object;
 
     this.object.updateMatrixWorld();
@@ -475,7 +474,6 @@ export class Pov_3d_viewer extends HTMLElement {
   get model() {
     return this.getAttribute("model");
   }
-
   get preset() {
     return this.getAttribute("preset");
   }

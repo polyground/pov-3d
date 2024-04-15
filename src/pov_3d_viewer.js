@@ -75,7 +75,7 @@ export class Pov_3d_viewer extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["model", "preset", "base_color", "background_color"];
+    return ["model", "model_type", "preset", "base_color", "background_color"];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -320,7 +320,10 @@ export class Pov_3d_viewer extends HTMLElement {
     this.addProgressBar();
 
     if (!file) return;
-    const fileExtension = file.split(".").pop();
+
+    const fileExtension = this.modelType
+      ? this.modelType
+      : file.split(".").pop();
 
     if (
       fileExtension !== "glb" &&
@@ -473,6 +476,10 @@ export class Pov_3d_viewer extends HTMLElement {
 
   get model() {
     return this.getAttribute("model");
+  }
+
+  get modelType() {
+    return this.getAttribute("model_type");
   }
   get preset() {
     return this.getAttribute("preset");

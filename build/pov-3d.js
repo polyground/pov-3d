@@ -22247,7 +22247,7 @@ class Ib extends HTMLElement {
     );
   }
   static get observedAttributes() {
-    return ["model", "preset", "base_color", "background_color"];
+    return ["model", "model_type", "preset", "base_color", "background_color"];
   }
   attributeChangedCallback(t, n, i) {
     switch (t) {
@@ -22293,7 +22293,7 @@ class Ib extends HTMLElement {
   async load(t) {
     if (this.addProgressBar(), !t)
       return;
-    const n = t.split(".").pop();
+    const n = this.modelType ? this.modelType : t.split(".").pop();
     if (n !== "glb" && n !== "fbx" && n !== "obj")
       throw new Error("File extension not found");
     n === "obj" && (this.objectType = "obj", await new _b().loadAsync(t, (s) => this.setLoadProgress(s)).then((s) => {
@@ -22339,6 +22339,9 @@ class Ib extends HTMLElement {
   // }
   get model() {
     return this.getAttribute("model");
+  }
+  get modelType() {
+    return this.getAttribute("model_type");
   }
   get preset() {
     return this.getAttribute("preset");
